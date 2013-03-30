@@ -23,7 +23,6 @@ class World implements GLSurfaceView.Renderer {
 	DynamicsWorld mDynamicsWorld;
 	
 	float eyeX = 7.f, eyeY = 2.f, eyeZ = 2.f;
-	//X=5,Y=2,Z=5
 	float rotateX = 10.f;
 	
 	private Cube mOb1;
