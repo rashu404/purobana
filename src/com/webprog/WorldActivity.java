@@ -32,7 +32,6 @@ public class WorldActivity extends Activity {
 
 class PurobanaGLView extends GLSurfaceView {
 	World mRenderer;
-	Ground mGround;
 	
 	public PurobanaGLView(Context context){
 		super(context);
@@ -50,8 +49,7 @@ class PurobanaGLView extends GLSurfaceView {
 		switch(ev.getActionMasked())
     	{
     		case MotionEvent.ACTION_DOWN:
-    			//mRenderer.shootInit();
-    			mRenderer.darkSwitch();
+    			mRenderer.shootInit();
     			break;
     			
     		case MotionEvent.ACTION_UP:

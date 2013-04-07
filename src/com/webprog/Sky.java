@@ -81,7 +81,7 @@ public class Sky implements World.WorldObject {
 	        gl11.glTexCoordPointer(2, GL10.GL_FLOAT, 4 * 5, 4 * 3);
 		}
 		
-		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
+		 gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
 		
 		gl.glEnable(GL11.GL_TEXTURE_2D);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTexture);
@@ -98,7 +98,7 @@ public class Sky implements World.WorldObject {
 	@Override
 	public void init(GL10 gl, Context context) {
 		mTexture = Utils.returnTex(gl, context, R.drawable.sky6);
-		//Utils.enableMaterial(gl);
+		Utils.enableMaterial(gl);
 	}
 
 }

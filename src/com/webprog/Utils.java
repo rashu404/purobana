@@ -6,7 +6,6 @@ import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 
-import android.R.integer;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,8 +32,8 @@ public class Utils {
 	}
 	
 	public static void enableLight(GL10 gl){
-		float[] lightAmbient = new float[] { 0.2f, 0.2f, 0.2f, 1.f };
-		float[] lightDiffuse = new float[] { 0.95f, 0.95f, 0.95f, 1.f };
+		float[] lightAmbient = new float[] { 0.2f, 0.2f, 0.2f, 1.0f };
+		float[] lightDiffuse = new float[] { 1, 1, 1, 1 };
 		float[] lightPos = new float[] { 8, 8, 30, 0 };
 				
 		gl.glEnable(GL10.GL_LIGHTING);
@@ -45,18 +44,12 @@ public class Utils {
 		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPos, 0);
 	}
 	
-	public static void enableMaterial(GL10 gl, boolean dark){
-		if(dark){
-			float[] matDiffuse = new float[] { 0.05f, 0.05f, 1.0f, 1.0f };
-			
-			gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
-		}else if(!dark){
-			float[] matAmbient = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-			float[] matDiffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+	public static void enableMaterial(GL10 gl){
+		float[] matAmbient = new float[] { 1f, 1f, 1f, 1.0f };
+		float[] matDiffuse = new float[] { 1f, 1f, 1f, 1.0f };
 		
-			gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
-			gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
-		}
+		gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
+		gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
 	}
 	
 	public static FloatBuffer allocateFloatBuffer(float floats[]) {

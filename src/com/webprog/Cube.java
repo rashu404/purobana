@@ -205,7 +205,7 @@ public class Cube implements World.WorldObject {
 	@Override
 	public void init(GL10 gl, Context context) {
 		mTexture = Utils.returnTex(gl, context, R.drawable.mokume2);
-		//Utils.enableMaterial(gl);
+		Utils.enableMaterial(gl);
 	}
 	
 	public void shootCube(Vector3f linVel){

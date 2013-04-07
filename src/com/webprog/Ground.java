@@ -22,7 +22,7 @@ public class Ground implements World.WorldObject {
 	FloatBuffer mVertexBuffer;
 	ByteBuffer mIndexBuffer;
 	
-	int mTexture, mTextureDark;
+	int mTexture;
 	int posBufferObject;
 	
 	public Ground(DynamicsWorld world) {
@@ -61,7 +61,7 @@ public class Ground implements World.WorldObject {
 	@Override
 	public void draw(GL10 gl) {
 		gl.glPushMatrix();
-
+		
 		gl.glFrontFace(GL10.GL_CCW);
 		
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
@@ -81,25 +81,15 @@ public class Ground implements World.WorldObject {
 	        gl11.glTexCoordPointer(2, GL10.GL_FLOAT, 4 * 5, 4 * 3);
 		}
 		
-		
 		 gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
 		
 		gl.glEnable(GL11.GL_TEXTURE_2D);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTexture);
 		
-		{
-			gl.glEnable(GL10.GL_BLEND);
-			gl.glEnable(GL10.GL_ALPHA);
-		
-			gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		}
-		
 		gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
 		
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
-		
-		gl.glDisable(GL11.GL_TEXTURE_2D);
 		
 		gl.glPopMatrix();
 	}
@@ -108,10 +98,7 @@ public class Ground implements World.WorldObject {
 	@Override
 	public void init(GL10 gl, Context context) {
 		mTexture = Utils.returnTex(gl, context, R.drawable.ground3);
-		//Utils.enableMaterial(gl);
-	}
-	
-	public void switchDark(){
+		Utils.enableMaterial(gl);
 	}
 
 }
