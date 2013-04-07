@@ -70,8 +70,8 @@ class World implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		gl.glClearColor(0f, 0f, 0f, 1.0f); //夜
-		//gl.glClearColor(bgColor, bgColor, bgColorB, 1.0f); //昼
+		//gl.glClearColor(0f, 0f, 0f, 1.0f); //夜
+		gl.glClearColor(bgColor, bgColor, bgColorB, 1.0f); //昼
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 		
 		gl.glEnable(GL10.GL_DEPTH_TEST);
@@ -111,8 +111,12 @@ class World implements GLSurfaceView.Renderer {
 	public void darkSwitch(){
 		if(dark){
 			dark = false;
+			bgColor = 1.0f;
+			bgColorB = 0.83f; 
 		}else if(!dark){
 			dark = true;
+			bgColor = 0.f;
+			bgColorB = 0.f;
 		}
 	}
 

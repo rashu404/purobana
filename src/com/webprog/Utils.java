@@ -47,7 +47,7 @@ public class Utils {
 	
 	public static void enableMaterial(GL10 gl, boolean dark){
 		if(dark){
-			float[] matDiffuse = new float[] { 0.05f, 0.05f, 1.0f, 1.0f };
+			float[] matDiffuse = new float[] { 0.0f, 0.0f, 1.0f, 1.0f };
 			
 			gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
 		}else if(!dark){
