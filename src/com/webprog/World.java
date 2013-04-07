@@ -2,6 +2,7 @@ package com.webprog;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
@@ -16,6 +17,7 @@ import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSo
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
+import android.util.Log;
 
 class World implements GLSurfaceView.Renderer {
 	Context mContext;
@@ -30,6 +32,10 @@ class World implements GLSurfaceView.Renderer {
 	private Vector3f linVel;
 	
 	private float mFovy = 90;
+	
+	private float bgColor = 1.0f, bgColorB = 0.83f; 
+	
+	boolean dark = false;
 	
 	public interface WorldObject{
 		public void init(GL10 gl, Context context);
@@ -47,6 +53,7 @@ class World implements GLSurfaceView.Renderer {
 		
 		mObjects[2] = new Ground(mDynamicsWorld);
 		mObjects[3] = new Sky(mDynamicsWorld);
+		
 	}
 
 	private void initPhysics() {
@@ -59,15 +66,16 @@ class World implements GLSurfaceView.Renderer {
 		
 		mDynamicsWorld = new DiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 		mDynamicsWorld.setGravity(new Vector3f(0.0f, 0.0f, -10.0f));
-		
 	}
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		gl.glClearColor(1.0f, 1.0f, 0.83f, 1.0f);
+		gl.glClearColor(0f, 0f, 0f, 1.0f); //夜
+		//gl.glClearColor(bgColor, bgColor, bgColorB, 1.0f); //昼
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+		
 		gl.glEnable(GL10.GL_DEPTH_TEST);
-				
+			
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		
@@ -77,6 +85,8 @@ class World implements GLSurfaceView.Renderer {
 		gl.glRotatef(rotateX, 0, 0, 1);
 		rotateX += 0.3f;
 		
+		Utils.enableMaterial(gl, dark);
+			
 		if(shootSwitch >= 1){
 			mOb1.draw(gl);
 		}
@@ -96,7 +106,14 @@ class World implements GLSurfaceView.Renderer {
 		mOb1.shootCube(linVel);
 		
 		shootSwitch = 1;
-		
+	}
+	
+	public void darkSwitch(){
+		if(dark){
+			dark = false;
+		}else if(!dark){
+			dark = true;
+		}
 	}
 
 	@Override
