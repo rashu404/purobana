@@ -5,6 +5,7 @@ import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import com.webprog.R;
@@ -33,6 +34,8 @@ public class Cube implements World.WorldObject {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(position);
+		
+		transform.setRotation(new Quat4f(0.f, 0.f, 0.f, 1.f));
 		//トランスフォームの初期化
 		
 		DefaultMotionState motionState = new DefaultMotionState(transform);
@@ -147,6 +150,9 @@ public class Cube implements World.WorldObject {
 		
 		mRigidBody = new RigidBody(rbInfo);
 		//rbInfoを基に剛体を作成
+		
+		mRigidBody.setRestitution(1.75f);
+		//反発
 	}
 
 	@Override
@@ -213,5 +219,7 @@ public class Cube implements World.WorldObject {
 		mRigidBody.setAngularVelocity(new Vector3f(0f, 0f, 0f));
 		
 	}
-
+	public RigidBody getRigidBody(){
+		return mRigidBody;
+	}
 }
