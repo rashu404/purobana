@@ -5,6 +5,25 @@ PhysXワールドサンプル
 
 <a href="http://web-prog.com/">OpenGL ESからJBulletまで3DAndroid入門@プロバナ</a>で作ったプログラムを置きます。
 
+タッチによる挙動は、WorldActivityクラス内、onTouchEvent()にて変化します。
+
+～タッチによって発生するイベント一覧～
+========
+（2013/4/28更新）
+
+    mRenderer.shootInit();
+    /* 固定位置へキューブ弾を発射 */
+    			
+    mRenderer.darkSwitch();
+    /* 昼夜の切り替え */
+    			
+    mRenderer.translateX(true);
+    /* 電車風景のようにカメラの平行移動（TOUCH_UPでfalseにすること） */
+    			
+    Vector3f point = mRenderer.getRayTo((int)ev.getX(), (int)ev.getY());
+    mRenderer.shootInit(point);
+    /* タッチ位置へキューブ弾を発射 */
+          
 
 神々しいnullieさんの物理演算サンプルである、HelloGameを大変参考にさせていただきました。
 本当に感謝です。
