@@ -151,7 +151,7 @@ public class Cube implements World.WorldObject {
 		mRigidBody = new RigidBody(rbInfo);
 		//rbInfoを基に剛体を作成
 		
-		mRigidBody.setRestitution(1.75f);
+		//mRigidBody.setRestitution(1.75f);
 		//反発
 	}
 

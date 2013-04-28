@@ -111,7 +111,4 @@ public class Ground implements World.WorldObject {
 		//Utils.enableMaterial(gl);
 	}
 	
-	public void switchDark(){
-	}
-
 }

@@ -31,7 +31,7 @@ class World implements GLSurfaceView.Renderer {
 	
 	private int bullets;
 	
-	private float eyeX = 10.f, eyeY = 3.f, eyeZ = 4.f;
+	private float eyeX = 5.f, eyeY = 3.f, eyeZ = 4.f;
 	private float lookX = 0.f, lookY = 0, lookZ = 1;
 	private float upX = 0, upY = 0, upZ = 1;
 	private float rotateX = 10.f;
@@ -103,7 +103,7 @@ class World implements GLSurfaceView.Renderer {
 		
 		if(isTouch){
 			eyeX += 0.5f;
-			//lookX += 0.5f;
+			lookX += 0.5f;
 		}
 		
 		for(WorldObject mObject:mObjects){
@@ -151,7 +151,7 @@ class World implements GLSurfaceView.Renderer {
 		mCubeBullets[shootNum] = new Cube(mDynamicsWorld, new Vector3f(eyeX, eyeY, eyeZ));
 		
 		linVel.normalize();
-		linVel.scale(10f);
+		linVel.scale(35f);
 		
 		mCubeBullets[shootNum].shootCube(linVel);
 		
@@ -205,8 +205,14 @@ class World implements GLSurfaceView.Renderer {
 		tmp1.scale(0.5f, hor);
 		tmp2.scale(0.5f, vertical);
 
+		Log.d("tmp1", "X=" + tmp1.x + "Y=" + tmp1.y + "Z=" + tmp1.z);
+		Log.d("tmp2", "X=" + tmp2.x + "Y=" + tmp2.y + "Z=" + tmp2.z);
+		
 		Vector3f rayTo = new Vector3f();
 		rayTo.sub(rayToCenter, tmp1);
+		
+		Log.d("rayTo1", "X=" + rayTo.x + "Y=" + rayTo.y + "Z=" + rayTo.z);
+		
 		rayTo.add(tmp2);
 
 		tmp1.scale(x, dHor);

@@ -54,7 +54,7 @@ class PurobanaGLView extends GLSurfaceView {
 		switch(ev.getActionMasked())
     	{
     		case MotionEvent.ACTION_DOWN:
-    			mRenderer.shootInit();
+    			//mRenderer.shootInit();
     			/* 固定位置へキューブ弾を発射 */
     			
     			//mRenderer.darkSwitch();
@@ -63,8 +63,8 @@ class PurobanaGLView extends GLSurfaceView {
     			//mRenderer.translateX(true);
     			/* 電車風景のようにカメラの平行移動 */
     			
-    			//Vector3f point = mRenderer.getRayTo((int)ev.getX(), (int)ev.getY());
-    			//mRenderer.shootInit(point);
+    			Vector3f point = mRenderer.getRayTo((int)ev.getX(), (int)ev.getY());
+    			mRenderer.shootInit(point);
     			/* タッチ位置へキューブ弾を発射 */
     			
     			//Log.d("VecPoint", "X=" + point.x + "_Y=" + point.y + "_Z=" + point.z);
@@ -73,6 +73,8 @@ class PurobanaGLView extends GLSurfaceView {
     			
     		case MotionEvent.ACTION_UP:
     			//mRenderer.translateX(false);
+    			/* 電車風平行移動の静止 */
+    			
     			break;
     	}
 		
