@@ -9,8 +9,6 @@ PhysXワールドサンプル
 
 ～タッチによって発生するイベント一覧～
 ========
-（2013/4/28更新）
-
     mRenderer.shootInit();
     /* 固定位置へキューブ弾を発射 */
     			
@@ -23,6 +21,10 @@ PhysXワールドサンプル
     Vector3f point = mRenderer.getRayTo((int)ev.getX(), (int)ev.getY());
     mRenderer.shootInit(point);
     /* タッチ位置へキューブ弾を発射 */
+    
+    mRenderer.fallingSwitch(b);
+    b = !b;
+    /* タッチでランダム地点にキューブ雨を降らせる */
           
 
 神々しいnullieさんの物理演算サンプルである、HelloGameを大変参考にさせていただきました。
