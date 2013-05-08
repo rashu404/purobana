@@ -11,16 +11,22 @@ PhysXワールドサンプル
 ========
     mRenderer.shootInit();
     /* 固定位置へキューブ弾を発射 */
+    
+<img src="http://web-prog.com/wp-content/uploads/dark1.png">
     			
     mRenderer.darkSwitch();
     /* 昼夜の切り替え */
-    			
+
     mRenderer.translateX(true);
     /* 電車風景のようにカメラの平行移動（TOUCH_UPでfalseにすること） */
     			
+<img src="http://web-prog.com/wp-content/uploads/touchShootTop.png">    
+                
     Vector3f point = mRenderer.getRayTo((int)ev.getX(), (int)ev.getY());
     mRenderer.shootInit(point);
     /* タッチ位置へキューブ弾を発射 */
+    
+<img src="http://web-prog.com/wp-content/uploads/fallingCubeTop-450x252.png">
     
     mRenderer.fallingSwitch(b);
     b = !b;
