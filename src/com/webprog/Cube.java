@@ -10,6 +10,7 @@ import javax.vecmath.Vector3f;
 
 import com.webprog.R;
 import android.content.Context;
+import android.util.Log;
 
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
@@ -26,7 +27,9 @@ public class Cube implements World.WorldObject {
 
 	private int posBufferObject = 0;
 	private int mTexture;
-
+	
+	private float ang = 0.f;
+	
 	public Cube(DynamicsWorld world, Vector3f position) {
 		createGeometry();
 		//バッファへ配列を格納
@@ -35,8 +38,23 @@ public class Cube implements World.WorldObject {
 		transform.setIdentity();
 		transform.origin.set(position);
 		
-		transform.setRotation(new Quat4f(0.f, 0.f, 0.f, 1.f));
+		/*
+		Quat4f ppp = new Quat4f();
+		Quat4f qqq = new Quat4f();
+		Quat4f rrr = new Quat4f();
+		
+		ppp = QuaternionUtils.putQuat(50, 0.5f, 0.5f);
+		float rad = QuaternionUtils.degToRad(130);
+		
+		qqq = QuaternionUtils.rotationQuat4f(rad, 50, 0.5f, 0.5f);
+		rrr = QuaternionUtils.rotationQuat4f(-rad, 50, 0.5f, 0.5f);
+		
+		ppp = QuaternionUtils.sol(rrr, ppp);
+		ppp = QuaternionUtils.sol(ppp, qqq);
+		
+		transform.setRotation(new Quat4f(ppp.w, ppp.x, ppp.y, ppp.z));
 		//トランスフォームの初期化
+		*/
 		
 		DefaultMotionState motionState = new DefaultMotionState(transform);
 		
@@ -158,6 +176,7 @@ public class Cube implements World.WorldObject {
 	@Override
 	public void draw(GL10 gl) {
 		Transform transform = new Transform();
+		
 		mRigidBody.getMotionState().getWorldTransform(transform);
 		
 		float m[] = new float[16];
@@ -198,14 +217,21 @@ public class Cube implements World.WorldObject {
 			gl.glNormalPointer(GL10.GL_FLOAT, 0, mNormalBuffer);
 		}
 
+		//gl.glRotatef(ang, 0, 0, 1);
+		//gl.glRotatef(ang, 0, 1, 0);
+		//gl.glRotatef(ang, 1, 0, 0);
+		
+		//gl.glScalef(ang, ang, ang);
+		
+		//ang += 1f;
+		
 		gl.glDrawElements(GL10.GL_TRIANGLES, 6 * 2 * 3, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
-
+		
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 		
 		gl.glPopMatrix();
-		
 	}
 	
 	@Override
@@ -216,10 +242,19 @@ public class Cube implements World.WorldObject {
 	
 	public void shootCube(Vector3f linVel){
 		mRigidBody.setLinearVelocity(linVel);
-		mRigidBody.setAngularVelocity(new Vector3f(0f, 0f, 0f));
-		
+		mRigidBody.setAngularVelocity(new Vector3f(0f, 0f, 0f));			
 	}
+	
 	public RigidBody getRigidBody(){
 		return mRigidBody;
 	}
+	
+	public Vector3f getRigidBodyPosition(){
+		pos = new Vector3f();
+		mRigidBody.getCenterOfMassPosition(pos);
+		
+		return pos;
+	}
+	
+	Vector3f pos;
 }

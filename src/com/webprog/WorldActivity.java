@@ -37,6 +37,7 @@ public class WorldActivity extends Activity {
 class PurobanaGLView extends GLSurfaceView {
 	World mRenderer;
 	Ground mGround;
+	Boolean b = true;
 	
 	public PurobanaGLView(Context context){
 		super(context);
@@ -63,9 +64,13 @@ class PurobanaGLView extends GLSurfaceView {
     			//mRenderer.translateX(true);
     			/* 電車風景のようにカメラの平行移動 */
     			
-    			Vector3f point = mRenderer.getRayTo((int)ev.getX(), (int)ev.getY());
-    			mRenderer.shootInit(point);
+    			//Vector3f point = mRenderer.getRayTo((int)ev.getX(), (int)ev.getY());
+    			//mRenderer.shootInit(point);
     			/* タッチ位置へキューブ弾を発射 */
+    			
+    			mRenderer.fallingSwitch(b);
+    			b = !b;
+    			/* タッチでランダム地点にキューブ雨を降らせる */
     			
     			//Log.d("VecPoint", "X=" + point.x + "_Y=" + point.y + "_Z=" + point.z);
     			//Log.d("IntPoint", "X=" + (int)ev.getX() + "_Y=" + (int)ev.getY());
@@ -74,7 +79,7 @@ class PurobanaGLView extends GLSurfaceView {
     		case MotionEvent.ACTION_UP:
     			//mRenderer.translateX(false);
     			/* 電車風平行移動の静止 */
-    			
+    			  			
     			break;
     	}
 		

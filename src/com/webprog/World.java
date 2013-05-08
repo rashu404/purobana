@@ -1,5 +1,7 @@
 package com.webprog;
 
+import java.util.Random;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import javax.vecmath.Quat4f;
@@ -26,15 +28,17 @@ class World implements GLSurfaceView.Renderer {
 	Cube mCubeBullets[];
 	Cube mOb1;
 	DynamicsWorld mDynamicsWorld;
+	GL10 gl10;
 	
 	FPSCounter fpsCounter;
 	
 	private int bullets;
 	
-	private float eyeX = 5.f, eyeY = 3.f, eyeZ = 4.f;
+	private float eyeX = 2.f, eyeY = 10.f, eyeZ = 3.f;
 	private float lookX = 0.f, lookY = 0, lookZ = 1;
 	private float upX = 0, upY = 0, upZ = 1;
-	private float rotateX = 10.f;
+	
+	float rotateX = 0.0f;
 	
 	private int shootNum = -1;
 	private boolean shootSwitch = false;
@@ -45,6 +49,12 @@ class World implements GLSurfaceView.Renderer {
 	private boolean isTouch = false;
 	
 	private float width, height;
+	
+	Vector3f mCubePos;
+	boolean posSwitch = false;
+	
+	int iTime = 0;
+	boolean rainSwitch = false;
 	
 	public interface WorldObject{
 		public void init(GL10 gl, Context context);
@@ -62,12 +72,13 @@ class World implements GLSurfaceView.Renderer {
 		
 		mObjects[2] = new Ground(mDynamicsWorld);
 		mObjects[3] = new Sky(mDynamicsWorld);
+		//mObjects[4] = new Mountain(mDynamicsWorld, new Vector3f(-5, -25, 10));
 		
-		bullets = 7;
+		bullets = 10;
 		
 		mCubeBullets = new Cube[bullets];
 		
-		fpsCounter = new FPSCounter();
+		mCubePos = new Vector3f(5, 3, 4);
 		
 	}
 
@@ -94,10 +105,14 @@ class World implements GLSurfaceView.Renderer {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		
-		GLU.gluLookAt(gl, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+		if(posSwitch == false)
+			GLU.gluLookAt(gl, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+		else 
+			GLU.gluLookAt(gl, mCubePos.x + 2, mCubePos.y + 2, mCubePos.z + 2, mCubePos.x, mCubePos.y, mCubePos.z, upX, upY, upZ);
 		
-		//gl.glRotatef(eyeX, 0, 0, 1);
-		//eyeX += 0.1f;
+		
+		//gl.glRotatef(rotateX, 0, 0, 1);
+		//rotateX += 0.75f;
 		
 		Utils.enableMaterial(gl, dark);
 		
@@ -115,14 +130,30 @@ class World implements GLSurfaceView.Renderer {
 		
 		if(shootNum >= 0){
 			for(Cube mBullet:mCubeBullets){
-				if(mBullet != null)
-					mBullet.draw(gl);
+				if(mBullet != null){
+						mBullet.draw(gl);
+				}
 			}
 		}
 		
-		mDynamicsWorld.stepSimulation(0.33f);
+		if(rainSwitch == true){
+			if(iTime % 8 == 0){
+				fallingCube();
+			}
+			
+			iTime += 1f;
+		}
+				
+		try{
+			mDynamicsWorld.stepSimulation(0.33f);
+		}catch(NullPointerException e){
+			Log.d("NullPo", "ぬるぽ回避");
+		}catch(ArrayIndexOutOfBoundsException e2){
+			Log.d("ArrayIndex", "ArrayIndex回避");
+		}
 		
-		fpsCounter.logFrame();
+		//fpsCounter.logFrame();
+		
 	}
 	public void shootInit(){
 		mOb1 = new Cube(mDynamicsWorld, new Vector3f(0, -10, 2));
@@ -155,6 +186,40 @@ class World implements GLSurfaceView.Renderer {
 		
 		mCubeBullets[shootNum].shootCube(linVel);
 		
+		//posSwitch = true;
+		
+	}
+	public void fallingSwitch(boolean rainSwitch){
+		this.rainSwitch = rainSwitch;
+	}
+	
+	public void fallingCube(){		
+		if(shootNum == -1)
+			shootNum = 0;
+		else if(shootNum >= 0 && shootNum < bullets - 1)
+			shootNum++;
+		else {
+			for(int i = 0; i < bullets - 1; i++){
+				mDynamicsWorld.removeRigidBody(mCubeBullets[i].getRigidBody());
+				mCubeBullets[i] = null;
+			}
+			shootNum = 0;
+			
+		}
+		
+		Random random = new Random();
+		
+		float fallX = random.nextFloat() * 20.f;
+		float fallY = random.nextFloat() * -10.f;
+		float fallZ = random.nextFloat() * 10.f + 1f;
+		
+		if(random.nextBoolean())
+			fallX = -fallX;
+		if(random.nextBoolean())
+			fallY = -fallY;
+		
+		mCubeBullets[shootNum] = new Cube(mDynamicsWorld, new Vector3f(fallX, fallY, fallZ));
+		mCubeBullets[shootNum].shootCube(new Vector3f(0, 0, -100));
 	}
 	
 	public Vector3f getRayTo(int x, int y){
@@ -261,5 +326,7 @@ class World implements GLSurfaceView.Renderer {
 			mObject.init(gl, mContext);
 		}
 		Utils.enableLight(gl);
+		
+		gl10 = gl;
 	}
 }
