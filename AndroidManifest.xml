@@ -6,7 +6,7 @@
     <uses-sdk android:minSdkVersion="7" />
 
     <application android:icon="@drawable/ic_launcher" android:label="PhysXワールド">
-        <activity android:name=".WorldActivity"
+        <activity android:name="com.webprog.phyx.MainActivity"
            		  android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
                   android:label="PhysXワールド">
             <intent-filter>
