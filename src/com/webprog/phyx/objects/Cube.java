@@ -1,16 +1,13 @@
-package com.webprog;
+package com.webprog.phyx.objects;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;
-import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
-import com.webprog.R;
 import android.content.Context;
-import android.util.Log;
 
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
@@ -19,16 +16,18 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.Transform;
+import com.webprog.R;
+import com.webprog.phyx.utils.Utils;
 
-public class Cube implements World.WorldObject {
+public class Cube implements GLObjectInterface {
 	RigidBody mRigidBody;
 	private FloatBuffer mVertexBuffer, mColorBuffer, mNormalBuffer;
 	private ByteBuffer mIndexBuffer;
 
-	private int posBufferObject = 0;
+	private int posBufferObject;
 	private int mTexture;
 	
-	private float ang = 0.f;
+	private float ang = 0f;
 	
 	public Cube(DynamicsWorld world, Vector3f position) {
 		createGeometry();
