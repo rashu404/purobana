@@ -1,4 +1,4 @@
-package com.webprog;
+package com.webprog.phyx.utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
