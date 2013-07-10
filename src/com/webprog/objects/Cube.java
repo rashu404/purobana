@@ -1,4 +1,4 @@
-package com.webprog.phyx.objects;
+package com.webprog.objects;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -6,6 +6,9 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;
 import javax.vecmath.Vector3f;
+
+import com.webprog.R;
+import com.webprog.utils.RenderUtils;
 
 import android.content.Context;
 
@@ -16,18 +19,13 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.Transform;
-import com.webprog.R;
-import com.webprog.phyx.utils.Utils;
 
-public class Cube implements GLObjectInterface {
+public class Cube{
 	RigidBody mRigidBody;
 	private FloatBuffer mVertexBuffer, mColorBuffer, mNormalBuffer;
 	private ByteBuffer mIndexBuffer;
 
-	private int posBufferObject;
 	private int mTexture;
-	
-	private float ang = 0f;
 	
 	public Cube(DynamicsWorld world, Vector3f position) {
 		createGeometry();
@@ -36,24 +34,6 @@ public class Cube implements GLObjectInterface {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(position);
-		
-		/*
-		Quat4f ppp = new Quat4f();
-		Quat4f qqq = new Quat4f();
-		Quat4f rrr = new Quat4f();
-		
-		ppp = QuaternionUtils.putQuat(50, 0.5f, 0.5f);
-		float rad = QuaternionUtils.degToRad(130);
-		
-		qqq = QuaternionUtils.rotationQuat4f(rad, 50, 0.5f, 0.5f);
-		rrr = QuaternionUtils.rotationQuat4f(-rad, 50, 0.5f, 0.5f);
-		
-		ppp = QuaternionUtils.sol(rrr, ppp);
-		ppp = QuaternionUtils.sol(ppp, qqq);
-		
-		transform.setRotation(new Quat4f(ppp.w, ppp.x, ppp.y, ppp.z));
-		//トランスフォームの初期化
-		*/
 		
 		DefaultMotionState motionState = new DefaultMotionState(transform);
 		
@@ -152,10 +132,10 @@ public class Cube implements GLObjectInterface {
 			indices[i * 6 + 3 + 2] = (byte) (i * 4 + 3);			
 		}
 		
-		mVertexBuffer = Utils.allocateFloatBuffer(vertices);
-		mColorBuffer = Utils.allocateFloatBuffer(colors);
-		mNormalBuffer = Utils.allocateFloatBuffer(normals);
-		mIndexBuffer = Utils.allocateByteBuffer(indices);
+		mVertexBuffer = RenderUtils.allocateFloatBuffer(vertices);
+		mColorBuffer = RenderUtils.allocateFloatBuffer(colors);
+		mNormalBuffer = RenderUtils.allocateFloatBuffer(normals);
+		mIndexBuffer = RenderUtils.allocateByteBuffer(indices);
 		
 	}
 	private void createRigidBody(DefaultMotionState motionState) {
@@ -172,7 +152,6 @@ public class Cube implements GLObjectInterface {
 		//反発
 	}
 
-	@Override
 	public void draw(GL10 gl) {
 		Transform transform = new Transform();
 		
@@ -192,14 +171,8 @@ public class Cube implements GLObjectInterface {
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 		
 		GL11 gl11 = (GL11) gl;
-		{
-			int[] buffers = new int[1];
-			gl11.glGenBuffers(1, buffers, 0);
-			posBufferObject = buffers[0];
-			
-			gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, posBufferObject);
-			gl11.glBufferData(GL11.GL_ARRAY_BUFFER, mVertexBuffer.capacity() * 4, mVertexBuffer, GL11.GL_STATIC_DRAW);
-		}
+
+		RenderUtils.drawVertexOptimization(gl11, mVertexBuffer);
 		
 		{
             gl11.glVertexPointer(3, GL10.GL_FLOAT, 4 * 5, 0);
@@ -215,14 +188,6 @@ public class Cube implements GLObjectInterface {
 			gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColorBuffer);
 			gl.glNormalPointer(GL10.GL_FLOAT, 0, mNormalBuffer);
 		}
-
-		//gl.glRotatef(ang, 0, 0, 1);
-		//gl.glRotatef(ang, 0, 1, 0);
-		//gl.glRotatef(ang, 1, 0, 0);
-		
-		//gl.glScalef(ang, ang, ang);
-		
-		//ang += 1f;
 		
 		gl.glDrawElements(GL10.GL_TRIANGLES, 6 * 2 * 3, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
 		
@@ -233,10 +198,9 @@ public class Cube implements GLObjectInterface {
 		gl.glPopMatrix();
 	}
 	
-	@Override
 	public void init(GL10 gl, Context context) {
-		mTexture = Utils.returnTex(gl, context, R.drawable.mokume2);
-		//Utils.enableMaterial(gl);
+		mTexture = RenderUtils.returnTex(gl, context, R.drawable.mokume2);
+//		RenderUtils.enableMaterial(gl);
 	}
 	
 	public void shootCube(Vector3f linVel){
@@ -256,4 +220,8 @@ public class Cube implements GLObjectInterface {
 	}
 	
 	Vector3f pos;
+	
+	public FloatBuffer getVertexFloatBuffer(){
+		return mVertexBuffer;
+	}
 }
