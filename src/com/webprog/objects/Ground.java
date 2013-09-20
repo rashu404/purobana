@@ -16,16 +16,17 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.webprog.R;
-import com.webprog.utils.RenderUtils;
+import com.webprog.util.RenderUtil;
 
 public class Ground {
-	RigidBody mRigidBody;
+	private RigidBody mRigidBody;
 
-	FloatBuffer mVertexBuffer;
-	ByteBuffer mIndexBuffer;
+	private FloatBuffer mVertexBuffer;
+	private ByteBuffer mIndexBuffer;
 
-	int mTexture, mTextureDark;
-
+	private int mTexture;
+	private int vboId;
+	
 	public Ground(DynamicsWorld world) {
 		createGeometry();
 		createRigidBody();
@@ -39,8 +40,8 @@ public class Ground {
 
 		byte indices[] = { 0, 1, 2, 3, };
 
-		mVertexBuffer = RenderUtils.allocateFloatBuffer(vertices);
-		mIndexBuffer = RenderUtils.allocateByteBuffer(indices);
+		mVertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
+		mIndexBuffer = RenderUtil.allocateByteBuffer(indices);
 	}
 
 	private void createRigidBody() {
@@ -63,7 +64,8 @@ public class Ground {
 
 		GL11 gl11 = (GL11) gl;
 		
-		RenderUtils.drawVertexOptimization(gl11, mVertexBuffer);
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, vboId);
+		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, mVertexBuffer.capacity() * 4, mVertexBuffer, GL11.GL_STATIC_DRAW);
 		
 		{
 			gl11.glVertexPointer(3, GL10.GL_FLOAT, 4 * 5, 0);
@@ -93,8 +95,8 @@ public class Ground {
 	}
 
 	public void init(GL10 gl, Context context) {
-		mTexture = RenderUtils.returnTex(gl, context, R.drawable.ground3);
-		// Utils.enableMaterial(gl);
+		mTexture = RenderUtil.returnTex(gl, context, R.drawable.ground3);
+		vboId = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
 	}
 
 	public FloatBuffer getVertexFloatBuffer() {

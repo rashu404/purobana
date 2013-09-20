@@ -1,63 +1,55 @@
 package com.webprog.render;
 
-import java.lang.ref.WeakReference;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import javax.microedition.khronos.opengles.GL10;
+import javax.microedition.khronos.opengles.GL11;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.dynamics.DynamicsWorld;
+import com.webprog.PhysxWorldActivity;
+import com.webprog.R;
 import com.webprog.objects.Cube;
 import com.webprog.objects.Ground;
 import com.webprog.objects.Sky;
-import com.webprog.utils.PhysicsUtils;
-import com.webprog.utils.RenderUtils;
+import com.webprog.util.PhysicsUtil;
+import com.webprog.util.RenderUtil;
 
 import android.content.Context;
 import android.util.Log;
 
 public class World {
-	Context mContext;
-	Cube mOb1;
-	DynamicsWorld mDynamicsWorld;
-	GL10 gl10;
+	private Cube mOb1;
+	private DynamicsWorld mDynamicsWorld;
 
-	List<Cube> mCubes;
-	List<Cube> mCubeBullets;
-	WeakReference<Cube> mCubeBulletWeek;
+	private static List<Cube> mCubes;
+	private List<Cube> mFallingBullets;
+	private List<Cube> mCubeBullets;
 
-	Ground mGround;
-	Sky mSky;
+	private Ground mGround;
+	private Sky mSky;
 
+	private int fallingBulletNum;
 	private int cubeBulletNum;
 
 	private int shootNum = -1;
 	private boolean shootSwitch = false;
 
-	private float bgColor = 1.0f, bgColorB = 0.83f;
-
 	private boolean dark = false;
-	private boolean isTouch = false;
 
-	private float width, height;
+	private int iTime = 0;
+	private boolean rainSwitch = false;
 
-	boolean posSwitch = false;
-
-	int iTime = 0;
-	boolean rainSwitch = false;
-
-	public World(Context context) {
-		mContext = context;
-
-		mDynamicsWorld = PhysicsUtils.getInitDynamicsWorld();
+	public World(Context context) {		
+		mDynamicsWorld = PhysicsUtil.getInitDynamicsWorld();
 
 		mCubes = new ArrayList<Cube>();
 		mCubes.add(new Cube(mDynamicsWorld, new Vector3f(0, 0, 3)));
 		mCubes.add(new Cube(mDynamicsWorld, new Vector3f(0, 0, 5)));
 
+		mFallingBullets = new ArrayList<Cube>();
 		mCubeBullets = new ArrayList<Cube>();
 
 		mGround = new Ground(mDynamicsWorld);
@@ -67,36 +59,29 @@ public class World {
 
 	public void onDrawFrame(GL10 gl) {
 
-		// if(posSwitch == false)
-		// GLU.gluLookAt(gl, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY,
-		// upZ);
-		// else
-		// GLU.gluLookAt(gl, mCubePos.x + 2, mCubePos.y + 2, mCubePos.z + 2,
-		// mCubePos.x, mCubePos.y, mCubePos.z, upX, upY, upZ);
-
-		// gl.glRotatef(rotateX, 0, 0, 1);
-		// rotateX += 0.5f;
-		//
-		// RenderUtils.enableMaterial(gl, dark);
-
-		// if(isTouch){
-		// eyeX += 0.5f;
-		// lookX += 0.5f;
-		// }
-
+		if (dark) {
+			RenderUtil.enableMaterial(gl, dark);
+		}
+		
 		for (Cube cube : mCubes)
 			cube.draw(gl);
 
-		if (cubeBulletNum != 0) {
-			for (int i = 0; i < mCubeBullets.size(); i++)
-				mCubeBullets.get(i).draw(gl);
+		if (fallingBulletNum != 0) {
+			for (int i = 0; i < mFallingBullets.size(); i++)
+				mFallingBullets.get(i).draw(gl);
 		}
 
 		mGround.draw(gl);
 		mSky.draw(gl);
+		
+		if (shootSwitch) {
 
-		if (shootSwitch)
-			mOb1.draw(gl);
+			if (cubeBulletNum > 0) {
+				for (int i = 0; i < mCubeBullets.size(); i++)
+					mCubeBullets.get(i).draw(gl);
+
+			}
+		}
 
 		if (shootNum >= 0) {
 			for (Cube mBullet : mCubeBullets) {
@@ -121,8 +106,6 @@ public class World {
 			Log.d("ArrayIndex", "ArrayIndex回避");
 		}
 
-		// fpsCounter.logFrame();
-
 	}
 
 	public void shootInit() {
@@ -143,79 +126,81 @@ public class World {
 			mCubeBullets.clear();
 
 			cubeBulletNum = 0;
+			shootSwitch = false;
 
 		}
 
 		mCubeBullets.add(new Cube(mDynamicsWorld, eye));
 
 		linVel.normalize();
-		linVel.scale(100f);
+		linVel.scale(30f);
 
 		mCubeBullets.get(cubeBulletNum).shootCube(linVel);
 
 		cubeBulletNum++;
+		shootSwitch = true;
 	}
 
-	public void fallingSwitch(boolean rainSwitch) {
-		this.rainSwitch = rainSwitch;
+	public void fallingSwitch(boolean arg) {
+		rainSwitch = arg;
 	}
 
 	public void fallingCube() {
-		if (cubeBulletNum > 10) {
-			for (int i = 0; i < mCubeBullets.size(); i++)
-				mDynamicsWorld.removeRigidBody(mCubeBullets.get(i).getRigidBody());
+		if (fallingBulletNum > 12) {
+			for (int i = 0; i < mFallingBullets.size(); i++)
+				mDynamicsWorld.removeRigidBody(mFallingBullets.get(i).getRigidBody());
 
-			mCubeBullets.clear();
+			mFallingBullets.clear();
 
-			cubeBulletNum = 0;
-
+			fallingBulletNum = 0;
 		}
 
 		Random random = new Random();
 
 		float fallX = random.nextFloat() * 20.f;
 		float fallY = random.nextFloat() * -10.f;
-		float fallZ = random.nextFloat() * 10.f + 1f;
+		float fallZ = random.nextFloat() * 10.f + 20f;
 
 		if (random.nextBoolean())
 			fallX = -fallX;
 		if (random.nextBoolean())
 			fallY = -fallY;
 
-		mCubeBullets.add(new Cube(mDynamicsWorld, new Vector3f(fallX, fallY, fallZ)));
-		mCubeBullets.get(cubeBulletNum).shootCube(new Vector3f(0, 0, -100));
-		
-		cubeBulletNum++;
+		mFallingBullets.add(new Cube(mDynamicsWorld, new Vector3f(fallX, fallY, fallZ)));
+		mFallingBullets.get(fallingBulletNum).shootCube(new Vector3f(0, 0, -100));
 
+		fallingBulletNum++;
+
+	}
+
+	public void rainSwitch() {
+		rainSwitch = !rainSwitch;
 	}
 
 	public void darkSwitch() {
+		MyRenderer myRenderer = PhysxWorldActivity.getMyRenderer();
+		
 		if (dark) {
 			dark = false;
-			bgColor = 1.0f;
-			bgColorB = 0.83f;
+			myRenderer.setNoDark();
 		} else if (!dark) {
 			dark = true;
-			bgColor = 0.f;
-			bgColorB = 0.f;
+			myRenderer.setDark();
 		}
 	}
 
-	public void translateX(boolean isTouch) {
-		this.isTouch = isTouch;
-	}
+	
+	public void worldInit(GL10 gl, Context context) {		
+		int texture = RenderUtil.returnTex(gl, context, R.drawable.mokume2);
+		int vboId = RenderUtil.makeFloatVBO((GL11)gl, mCubes.get(0).getVertexFloatBuffer());
 
-	public void worldInit(GL10 gl, Context context) {
-		for (Cube cube : mCubes) {
-			cube.init(gl, context);
-		}
-
+		Cube.setTexture(texture);
+		Cube.setVboId(vboId);
+		
 		mGround.init(gl, context);
 		mSky.init(gl, context);
-
-		RenderUtils.enableLight(gl);
-
-		gl10 = gl;
+		
+		RenderUtil.enableLight(gl);
 	}
 
 }
