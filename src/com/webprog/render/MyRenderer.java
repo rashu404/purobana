@@ -156,15 +156,15 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 	public static Context getMContext() {
 		return mContext;
 	}
-
-	public void setDark() {
-		bgColor = 0f;
-		bgColorB = 0f;
-	}
-
-	public void setNoDark() {
-		bgColor = 1.0f;
-		bgColorB = 0.83f;
+	
+	public void setDark(boolean dark){
+		if(dark){
+			bgColor = 0f;
+			bgColorB = 0f;
+		}else {
+			bgColor = 1.0f;
+			bgColorB = 0.83f;
+		}
 	}
 
 	public void setEye(float x, float y, float z) {
@@ -215,7 +215,7 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		// タップ位置へキューブ弾を発射
 		Vector3f point = PhysicsUtil.getRayTo((int) event.getX(), (int) event.getY(), eye, look,
 				up, width, height);
-		mWorld.shootInit(point, eye);
+		mWorld.shootCube(point, eye);
 	}
 	
 	// eyeの周囲を回転するlookを求める

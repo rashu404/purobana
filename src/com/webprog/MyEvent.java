@@ -3,13 +3,12 @@ package com.webprog;
 import com.webprog.render.MyRenderer;
 import com.webprog.render.World;
 
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 
 public class MyEvent {
-	private static MyEvent instance = new MyEvent();
+	private static MyEvent instance = new MyEvent(); // シングルトンで複数のインスタンスを生成しない
 	
 	private MyRenderer myRenderer;
 	private World mWorld;
@@ -17,11 +16,10 @@ public class MyEvent {
 	private float distanceX;
 	private long tapUpMillis;
 	
-	public MyEvent() {
+	private MyEvent() {
 		myRenderer = PhysxWorldActivity.getMyRenderer();
 		mWorld = myRenderer.getWorld();
 	}
-	
 	
 	// 上下左右ボタンのタッチイベント
 	public void onButtonEvent(View v, MotionEvent e){
@@ -86,8 +84,6 @@ public class MyEvent {
 			break;
 			
 		case MotionEvent.ACTION_UP:
-			
-			Log.d("DEBUG", "ActioUp");
 			
 			long cTimeMillis = System.currentTimeMillis();
 			long diffTime = cTimeMillis - tapUpMillis;

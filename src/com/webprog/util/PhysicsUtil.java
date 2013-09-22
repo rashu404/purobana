@@ -13,6 +13,11 @@ import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSo
 public class PhysicsUtil {
 	private static Vector3f rayFrom, rayForward, vertical, hor, rayToCenter, tmp1, tmp2, rayTo;
 
+	/**
+	 * 初期化したダイナミクスワールドを返す
+	 * 
+	 * @return
+	 */
 	public static DynamicsWorld getInitDynamicsWorld() {
 		DbvtBroadphase broadphase = new DbvtBroadphase();
 
@@ -27,6 +32,19 @@ public class PhysicsUtil {
 
 		return mDynamicsWorld;
 	}
+	
+	/**
+	 * タップした方向へのベクトルを返す
+	 * 
+	 * @param x タップ位置X
+	 * @param y タップ位置Y
+	 * @param eye カメラの位置
+	 * @param look カメラの視点
+	 * @param up カメラの上方向
+	 * @param width デバイスの横幅
+	 * @param height デバイスの縦幅
+	 * @return
+	 */
 	public static Vector3f getRayTo(int x, int y, Vector3f eye, Vector3f look, Vector3f up, float width, float height){
 		float top = 1f;
 		float bottom = -1f;

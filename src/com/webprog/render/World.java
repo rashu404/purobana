@@ -21,10 +21,9 @@ import android.content.Context;
 import android.util.Log;
 
 public class World {
-	private Cube mOb1;
 	private DynamicsWorld mDynamicsWorld;
 
-	private static List<Cube> mCubes;
+	private List<Cube> mCubes;
 	private List<Cube> mFallingBullets;
 	private List<Cube> mCubeBullets;
 
@@ -34,13 +33,9 @@ public class World {
 	private int fallingBulletNum;
 	private int cubeBulletNum;
 
-	private int shootNum = -1;
-	private boolean shootSwitch = false;
+	private boolean shootSwitch, rainSwitch, dark;
 
-	private boolean dark = false;
-
-	private int iTime = 0;
-	private boolean rainSwitch = false;
+	private int iTime;
 
 	public World(Context context) {		
 		mDynamicsWorld = PhysicsUtil.getInitDynamicsWorld();
@@ -54,44 +49,16 @@ public class World {
 
 		mGround = new Ground(mDynamicsWorld);
 		mSky = new Sky(mDynamicsWorld);
-
 	}
 
 	public void onDrawFrame(GL10 gl) {
 
-		if (dark) {
+		if (dark)
 			RenderUtil.enableMaterial(gl, dark);
-		}
 		
-		for (Cube cube : mCubes)
-			cube.draw(gl);
-
-		if (fallingBulletNum != 0) {
-			for (int i = 0; i < mFallingBullets.size(); i++)
-				mFallingBullets.get(i).draw(gl);
-		}
-
-		mGround.draw(gl);
-		mSky.draw(gl);
+		this.drawObjcets(gl);
 		
-		if (shootSwitch) {
-
-			if (cubeBulletNum > 0) {
-				for (int i = 0; i < mCubeBullets.size(); i++)
-					mCubeBullets.get(i).draw(gl);
-
-			}
-		}
-
-		if (shootNum >= 0) {
-			for (Cube mBullet : mCubeBullets) {
-				if (mBullet != null) {
-					mBullet.draw(gl);
-				}
-			}
-		}
-
-		if (rainSwitch == true) {
+		if (rainSwitch) {
 			if (iTime % 8 == 0)
 				fallingCube();
 
@@ -107,18 +74,40 @@ public class World {
 		}
 
 	}
+	
+	private void drawObjcets(GL10 gl){
+		// デフォルトのキューブを描画
+		for (Cube cube : mCubes){
+			cube.draw(gl);
+		}
 
-	public void shootInit() {
-		mOb1 = new Cube(mDynamicsWorld, new Vector3f(0, -10, 2));
+		// キューブ雨を描画
+		for(int i = 0; i < mFallingBullets.size() && isFalling(); i++){
+			mFallingBullets.get(i).draw(gl);
+		}
+		
+		// 地面を描画
+		mGround.draw(gl);
+		
+		// 空を描画
+		mSky.draw(gl);
 
-		Vector3f linVel = new Vector3f(0, 50, 0);
+		// キューブ弾を描画
+		for(int i = 0; i < mCubeBullets.size() && isShoot(); i++){
+			mCubeBullets.get(i).draw(gl);
+		}
 
-		mOb1.shootCube(linVel);
-
-		shootSwitch = true;
+	}
+	
+	private boolean isFalling(){
+		return fallingBulletNum != 0;
+	}
+	
+	private boolean isShoot(){
+		return shootSwitch && cubeBulletNum > 0;
 	}
 
-	public void shootInit(Vector3f linVel, Vector3f eye) {
+	public void shootCube(Vector3f linVel, Vector3f eye) {
 		if (cubeBulletNum > 10) {
 			for (int i = 0; i < mCubeBullets.size(); i++)
 				mDynamicsWorld.removeRigidBody(mCubeBullets.get(i).getRigidBody());
@@ -127,7 +116,6 @@ public class World {
 
 			cubeBulletNum = 0;
 			shootSwitch = false;
-
 		}
 
 		mCubeBullets.add(new Cube(mDynamicsWorld, eye));
@@ -139,10 +127,6 @@ public class World {
 
 		cubeBulletNum++;
 		shootSwitch = true;
-	}
-
-	public void fallingSwitch(boolean arg) {
-		rainSwitch = arg;
 	}
 
 	public void fallingCube() {
@@ -178,15 +162,10 @@ public class World {
 	}
 
 	public void darkSwitch() {
-		MyRenderer myRenderer = PhysxWorldActivity.getMyRenderer();
+		dark = !dark;
 		
-		if (dark) {
-			dark = false;
-			myRenderer.setNoDark();
-		} else if (!dark) {
-			dark = true;
-			myRenderer.setDark();
-		}
+		MyRenderer myRenderer = PhysxWorldActivity.getMyRenderer();
+		myRenderer.setDark(dark);
 	}
 
 	

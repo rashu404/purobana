@@ -130,6 +130,7 @@ public class Cube{
 			indices[i * 6 + 3 + 2] = (byte) (i * 4 + 3);			
 		}
 
+		// それぞれのバッファを作成
 		mVertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
 		mColorBuffer = RenderUtil.allocateFloatBuffer(colors);
 		mNormalBuffer = RenderUtil.allocateFloatBuffer(normals);
@@ -137,17 +138,17 @@ public class Cube{
 
 	}
 	private void createRigidBody(DefaultMotionState motionState) {
+		// CollisionShapeを作成
 		CollisionShape shape = new BoxShape(new Vector3f(1.f, 1.f, 1.f));
-		//CollisionShapeを作成
 
+		// 剛体の作成情報を渡す
 		RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(10.f, motionState, shape, new Vector3f(10.f, 10.f, 10.f));
-		//剛体の作成情報を渡す
-
+		
+		// rbInfoを基に剛体を作成
 		mRigidBody = new RigidBody(rbInfo);
-		//rbInfoを基に剛体を作成
-
+		
+		// 反発係数を加える
 		//mRigidBody.setRestitution(1.75f);
-		//反発
 	}
 
 	public void draw(GL10 gl) {

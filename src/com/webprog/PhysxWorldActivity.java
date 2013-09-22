@@ -56,8 +56,8 @@ public class PhysxWorldActivity extends Activity implements OnTouchListener {
 
 	@Override
 	public boolean onTouch(View v, MotionEvent e) {
-		MyEvent mte = MyEvent.getInstance();
-		mte.onButtonEvent(v, e);
+		MyEvent me = MyEvent.getInstance();
+		me.onButtonEvent(v, e);
 		
 		return false;
 	}
