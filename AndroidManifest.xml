@@ -14,7 +14,7 @@
         android:label="PhysXワールド"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.webprog.MainActivity"
+            android:name="com.webprog.PhysxWorldActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:theme="@style/FullscreenTheme" >
