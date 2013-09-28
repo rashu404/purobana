@@ -40,7 +40,8 @@ public class RenderUtil {
 		GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bmp, 0);
 
 		gl.glEnable(GL10.GL_TEXTURE_2D);
-		gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
+		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
+		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
 
 		bmp.recycle();
 
@@ -55,7 +56,7 @@ public class RenderUtil {
 	public static void enableLight(GL10 gl) {
 		float[] lightAmbient = new float[] { 0.38f, 0.38f, 0.38f, 1.f };
 		float[] lightDiffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.f };
-		float[] lightPos = new float[] { 8, 8, 30, 0 };
+		float[] lightPos = new float[] { 8, 8, 25, 0 };
 
 		gl.glEnable(GL10.GL_LIGHTING);
 		gl.glEnable(GL10.GL_LIGHT0);
@@ -113,7 +114,7 @@ public class RenderUtil {
 
 		return buffer;
 	}
-
+	
 	/**
 	 * FloatBufferからVBOを作成する
 	 * 

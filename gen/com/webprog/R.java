@@ -22,12 +22,13 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int black_overlay=0x7f040000;
     }
     public static final class drawable {
-        public static final int darkground=0x7f020000;
-        public static final int darksky=0x7f020001;
-        public static final int ground3=0x7f020002;
-        public static final int ic_launcher=0x7f020003;
-        public static final int mokume2=0x7f020004;
-        public static final int sky6=0x7f020005;
+        public static final int body3=0x7f020000;
+        public static final int darkground=0x7f020001;
+        public static final int darksky=0x7f020002;
+        public static final int ground3=0x7f020003;
+        public static final int ic_launcher=0x7f020004;
+        public static final int mokume2=0x7f020005;
+        public static final int sky6=0x7f020006;
     }
     public static final class id {
         public static final int back_button=0x7f070004;

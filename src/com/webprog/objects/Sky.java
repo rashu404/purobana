@@ -19,24 +19,26 @@ import com.webprog.R;
 import com.webprog.util.RenderUtil;
 
 public class Sky {
-	private RigidBody mRigidBody;
-
 	private FloatBuffer mVertexBuffer;
 	private ByteBuffer mIndexBuffer;
 
 	private int mTexture;
-	private int vboId;
+	private int mVBO;
 
 	public Sky(DynamicsWorld world) {
 		createGeometry();
-		createRigidBody();
-
-		world.addRigidBody(mRigidBody);
+		
+		RigidBody rigidBody = createRigidBody();
+		world.addRigidBody(rigidBody);
 	}
 
 	private void createGeometry() {
-		float vertices[] = { -1000.f, -1000.f, 30.f, 0.0f, 0.0f, -1000.f, 1000.f, 30.f, 0.0f, 1.0f,
-				1000.f, -1000.f, 30.f, 1.0f, 0.0f, 1000.f, 1000.f, 30.f, 1.0f, 1.0f, };
+		float vertices[] = {
+				-1000.f, -1000.f, 30.f, 0.0f, 0.0f,
+				-1000.f, 1000.f, 30.f, 0.0f, 1.0f,
+				1000.f, -1000.f, 30.f, 1.0f, 0.0f,
+				1000.f, 1000.f, 30.f, 1.0f, 1.0f,
+		};
 
 		byte indices[] = { 0, 1, 2, 3, };
 
@@ -44,27 +46,32 @@ public class Sky {
 		mIndexBuffer = RenderUtil.allocateByteBuffer(indices);
 	}
 
-	private void createRigidBody() {
+	private RigidBody createRigidBody() {
 		CollisionShape shape = new StaticPlaneShape(new Vector3f(0.f, 0.f, 1.f), 0);
 
 		DefaultMotionState motionState = new DefaultMotionState();
 
 		RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, motionState, shape);
 
-		mRigidBody = new RigidBody(rbInfo);
+		return new RigidBody(rbInfo);
 	}
 
 	public void draw(GL10 gl) {
 		gl.glPushMatrix();
 
+		// カリングを有効化
+		gl.glEnable(GL10.GL_CULL_FACE);
+
+		// 裏面を描画しない
 		gl.glFrontFace(GL10.GL_CCW);
+		gl.glCullFace(GL10.GL_BACK);
 
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
 		GL11 gl11 = (GL11) gl;
 		
-		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, vboId);
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, mVBO);
 		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, mVertexBuffer.capacity() * 4, mVertexBuffer, GL11.GL_STATIC_DRAW);
 		
 		{
@@ -81,17 +88,17 @@ public class Sky {
 
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		
+		gl.glDisable(GL10.GL_TEXTURE_2D);
+		
+		gl.glDisable(GL10.GL_CULL_FACE);
 
 		gl.glPopMatrix();
 	}
 
 	public void init(GL10 gl, Context context) {
 		mTexture = RenderUtil.returnTex(gl, context, R.drawable.sky6);
-		vboId = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
-	}
-
-	public FloatBuffer getVertexFloatBuffer() {
-		return mVertexBuffer;
+		mVBO = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
 	}
 
 }

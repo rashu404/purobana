@@ -19,24 +19,26 @@ import com.webprog.R;
 import com.webprog.util.RenderUtil;
 
 public class Ground {
-	private RigidBody mRigidBody;
-
 	private FloatBuffer mVertexBuffer;
 	private ByteBuffer mIndexBuffer;
 
 	private int mTexture;
-	private int vboId;
+	private int mVBO;
 	
 	public Ground(DynamicsWorld world) {
 		createGeometry();
-		createRigidBody();
-
-		world.addRigidBody(mRigidBody);
+		
+		RigidBody rigidBody = createRigidBody();
+		world.addRigidBody(rigidBody);
 	}
 
 	private void createGeometry() {
-		float vertices[] = { -1000.f, -1000.f, 0.f, 0.0f, 0.0f, -1000.f, 1000.f, 0.f, 0.0f, 200.0f,
-				1000.f, -1000.f, 0.f, 200.0f, 0.0f, 1000.f, 1000.f, 0.f, 200.0f, 200.0f, };
+		float vertices[] = {
+				-1000.f, -1000.f, 0.f, 0.0f, 0.0f, 
+				-1000.f, 1000.f, 0.f, 0.0f, 200.0f,
+				1000.f, -1000.f, 0.f, 200.0f, 0.0f, 
+				1000.f, 1000.f, 0.f, 200.0f, 200.0f,
+		};
 
 		byte indices[] = { 0, 1, 2, 3, };
 
@@ -44,63 +46,70 @@ public class Ground {
 		mIndexBuffer = RenderUtil.allocateByteBuffer(indices);
 	}
 
-	private void createRigidBody() {
+	// 静的剛体の作成
+	private RigidBody createRigidBody() {
+		// 静的剛体のCollisionShapeを作成
 		CollisionShape shape = new StaticPlaneShape(new Vector3f(0.f, 0.f, 1.f), 0);
 
 		DefaultMotionState motionState = new DefaultMotionState();
 
+		// 剛体の作成情報を渡す
 		RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, motionState, shape);
 
-		mRigidBody = new RigidBody(rbInfo);
+		return new RigidBody(rbInfo);
 	}
 
 	public void draw(GL10 gl) {
 		gl.glPushMatrix();
 
-		gl.glFrontFace(GL10.GL_CCW);
+		// カリング（指定した面を描画しない）を有効化
+		gl.glEnable(GL10.GL_CULL_FACE);
 
+		// 裏面を描画しない
+		gl.glFrontFace(GL10.GL_CW);
+		gl.glCullFace(GL10.GL_BACK);
+		
+		// 頂点配列・テクスチャ配列を有効化
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
 		GL11 gl11 = (GL11) gl;
 		
-		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, vboId);
+		// VBOを関連付け
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, mVBO);
 		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, mVertexBuffer.capacity() * 4, mVertexBuffer, GL11.GL_STATIC_DRAW);
 		
 		{
+			// 頂点配列・テクスチャ配列をOpenGL ES上で定義
 			gl11.glVertexPointer(3, GL10.GL_FLOAT, 4 * 5, 0);
 			gl11.glTexCoordPointer(2, GL10.GL_FLOAT, 4 * 5, 4 * 3);
 		}
 
 		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
 
+		// テクスチャの有効化と関連付け
 		gl.glEnable(GL11.GL_TEXTURE_2D);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTexture);
 
-		{
-			gl.glEnable(GL10.GL_BLEND);
-			gl.glEnable(GL10.GL_ALPHA);
-
-			gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		}
-
+		// インデックスバッファを元に描画
 		gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
 
+		// 頂点配列・テクスチャ配列の無効化
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
+		// テクスチャの無効化
 		gl.glDisable(GL11.GL_TEXTURE_2D);
+		
+		// カリングの無効化
+		gl.glDisable(GL10.GL_CULL_FACE);
 
 		gl.glPopMatrix();
 	}
 
 	public void init(GL10 gl, Context context) {
 		mTexture = RenderUtil.returnTex(gl, context, R.drawable.ground3);
-		vboId = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
-	}
-
-	public FloatBuffer getVertexFloatBuffer() {
-		return mVertexBuffer;
+		mVBO = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
 	}
 
 }

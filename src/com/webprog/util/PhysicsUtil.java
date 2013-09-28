@@ -11,7 +11,7 @@ import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 
 public class PhysicsUtil {
-	private static Vector3f rayFrom, rayForward, vertical, hor, rayToCenter, tmp1, tmp2, rayTo;
+	private static Vector3f rayFrom, rayForward, hor, vertical, dHor, dVert, rayToCenter, tmp1, tmp2, rayTo;
 
 	/**
 	 * 初期化したダイナミクスワールドを返す
@@ -88,9 +88,20 @@ public class PhysicsUtil {
 		
 		rayToCenter.add(rayFrom, rayForward);
 		
-		Vector3f dHor = new Vector3f(hor);
+		if(dHor == null){
+			dHor = new Vector3f(hor);
+		}else {
+			dHor.set(hor.x, hor.y, hor.z);
+		}
+		
 		dHor.scale(1f / width);
-		Vector3f dVert = new Vector3f(vertical);
+		
+		if(dVert == null){
+			dVert = new Vector3f(vertical);
+		}else {
+			dVert.set(vertical.x, vertical.y, vertical.z);
+		}
+		
 		dVert.scale(1.f / (float) height);
 
 		tmp1.scale(0.5f, hor);
@@ -112,8 +123,8 @@ public class PhysicsUtil {
 		rayFrom = new Vector3f(eye.x, eye.y, eye.z);
 		rayForward = new Vector3f();
 		
-		vertical = new Vector3f(up.x, up.y, up.z);
 		hor = new Vector3f();
+		vertical = new Vector3f(up.x, up.y, up.z);
 		
 		rayToCenter = new Vector3f();
 		

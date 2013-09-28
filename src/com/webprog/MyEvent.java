@@ -8,21 +8,17 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class MyEvent {
-	private static MyEvent instance = new MyEvent(); // シングルトンで複数のインスタンスを生成しない
-	
-	private MyRenderer myRenderer;
-	private World mWorld;
-	
+	private static MyEvent instance;
+
 	private float distanceX;
 	private long tapUpMillis;
 	
 	private MyEvent() {
-		myRenderer = PhysxWorldActivity.getMyRenderer();
-		mWorld = myRenderer.getWorld();
 	}
 	
 	// 上下左右ボタンのタッチイベント
-	public void onButtonEvent(View v, MotionEvent e){
+	public void onButtonEvent(View v, MotionEvent e, MyRenderer myRenderer){
+		
 		switch (e.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 
@@ -62,11 +58,15 @@ public class MyEvent {
 			myRenderer.setBack(false);
 
 			break;
+			
+		default:
+			break;
 		}
 	}
 	
 	// レンダラ上のタッチイベント
-	public void onRenderEvent(MotionEvent event){
+	public void onRenderEvent(MotionEvent event, MyRenderer myRenderer){
+		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			
@@ -99,18 +99,27 @@ public class MyEvent {
 	}
 	
 	// メニュー選択のイベント
-	public void onSelectedMenuItem(MenuItem item){
+	public void onSelectedMenuItem(MenuItem item, World world){
 		switch (item.getItemId()) {
 		case 0:
-			mWorld.darkSwitch();
+			world.darkSwitch();
 			break;
 		case 1:
-			mWorld.rainSwitch();
+			world.rainSwitch();
+			break;
+		case 2:
+			world.initCubePosition();
+			break;
+			
+		default:
 			break;
 		}
 	}
 	
 	public static MyEvent getInstance(){
+		if(instance == null)
+			instance = new MyEvent();
+		
 		return instance;
 	}
 }

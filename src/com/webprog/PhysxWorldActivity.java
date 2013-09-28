@@ -31,6 +31,7 @@ public class PhysxWorldActivity extends Activity implements OnTouchListener {
 		this.setButton(R.id.back_button);
 		
 		myRenderer = (MyRenderer) findViewById(R.id.renderer);
+
 	}
 	
 	private void setButton(int resId){
@@ -42,6 +43,7 @@ public class PhysxWorldActivity extends Activity implements OnTouchListener {
 
 		menu.add(Menu.NONE, 0, 0, "Dark or NonDark");
 		menu.add(Menu.NONE, 1, 1, "FallingCube");
+		menu.add(Menu.NONE, 2, 2, "InitCubePostion");
 
 		return super.onCreateOptionsMenu(menu);
 	};
@@ -49,7 +51,7 @@ public class PhysxWorldActivity extends Activity implements OnTouchListener {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		MyEvent mte = MyEvent.getInstance();
-		mte.onSelectedMenuItem(item);
+		mte.onSelectedMenuItem(item, myRenderer.getWorld());
 
 		return true;
 	}
@@ -57,7 +59,7 @@ public class PhysxWorldActivity extends Activity implements OnTouchListener {
 	@Override
 	public boolean onTouch(View v, MotionEvent e) {
 		MyEvent me = MyEvent.getInstance();
-		me.onButtonEvent(v, e);
+		me.onButtonEvent(v, e, myRenderer);
 		
 		return false;
 	}

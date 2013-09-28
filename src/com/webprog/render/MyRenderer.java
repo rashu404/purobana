@@ -4,9 +4,10 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import javax.vecmath.Vector3f;
 
+import com.bulletphysics.dynamics.DynamicsWorld;
 import com.webprog.MyEvent;
+import com.webprog.objects.Myself;
 import com.webprog.util.PhysicsUtil;
-import com.webprog.util.RenderUtil;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -15,17 +16,24 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 
 public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
-	private static Context mContext;
+	
+	enum Sign{
+		PLUS_SIGN, MINUS_SIGN, ZERO
+	}
+	
+	private Context mContext;
 
 	private World mWorld;
 	private float width, height;
 
+	private Myself mOneself;
+	
 	private Vector3f eye = new Vector3f(2f, 10f, 3f);
 	private Vector3f look = new Vector3f(0f, 0f, 1f);
 	private Vector3f up = new Vector3f(0, 0, 1);
 
-	private Vector3f forbackVec = new Vector3f();
-	private Vector3f sideVec = new Vector3f();
+	private Vector3f forbackVec;
+	private Vector3f sideVec;
 
 	private boolean isForward, isLeft, isRight, isBack;
 	
@@ -37,13 +45,17 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		mContext = context;
 
 		mWorld = new World(context);
+		
+		DynamicsWorld dynamicsWorld = mWorld.getDynamicsWorld();
+		mOneself = new Myself(dynamicsWorld, eye);
+				
 		setRenderer(this);
 	}
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		MyEvent myEvent = MyEvent.getInstance();
-		myEvent.onRenderEvent(event);
+		myEvent.onRenderEvent(event, this);
 		
 		return true;
 	}
@@ -62,8 +74,8 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		gl.glLoadIdentity();
 
 		GLU.gluLookAt(gl, eye.x, eye.y, eye.z, look.x, look.y, look.z, up.x, up.y, up.z);
-
-		RenderUtil.enableMaterial(gl, false);
+		
+		mOneself.sync(gl, eye);
 
 		mWorld.onDrawFrame(gl);
 	}
@@ -89,6 +101,9 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 
 	// 前後へ移動するメソッド
 	private void forbackTranslate(boolean forward){
+		if(forbackVec == null)
+			forbackVec = new Vector3f();
+		
 		// eyeからlookへ向かう単位ベクトルを作成
 		forbackVec.sub(look, eye);
 		forbackVec.normalize();
@@ -107,13 +122,15 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 
 	// 左右へ移動するメソッド
 	private void sideTranslate(boolean left) {
+		if(forbackVec == null)
+			forbackVec = new Vector3f();
+		
 		// eyeからlookへ向かう単位ベクトルを作成
 		forbackVec.sub(look, eye);
 		forbackVec.normalize();
 		
-		// 遠い方向へ向け、より正確なベクトルにする
-		float farPlane = 10000f;
-		forbackVec.scale(farPlane);
+		if(sideVec == null)
+			sideVec = new Vector3f();
 		
 		// 上方向のベクトルとeyeからlookへ向かうベクトルの外積
 		sideVec.cross(up, forbackVec);
@@ -153,10 +170,6 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		return mWorld;
 	}
 
-	public static Context getMContext() {
-		return mContext;
-	}
-	
 	public void setDark(boolean dark){
 		if(dark){
 			bgColor = 0f;
@@ -220,7 +233,6 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 	
 	// eyeの周囲を回転するlookを求める
 	public void lookRotation(double degH){
-		
 		// 現在の水平の視点の角度を極座標で求める
 		double thetaH = Math.atan2(look.x - eye.x , look.y - eye.y);
 		thetaH = convertRectRad(thetaH);
@@ -247,18 +259,17 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 	 */
 	private double convertRectRad(double polarRad){
 		switch (getSign(polarRad)) {
-		case 1:
+		case PLUS_SIGN:
 			
 			// 符号がプラス
 			return Math.toRadians(450) - polarRad;
 			
-		case -1:
+		case MINUS_SIGN:
 			
 			// 符号がマイナス
 			return Math.toRadians(90) + Math.abs(polarRad);
 			
 		default:
-			
 			break;
 		}
 		
@@ -266,13 +277,13 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 	}
 	
 	// double値の符号を取得
-	private int getSign(double n){
+	private Sign getSign(double n){
 		if(n > 0){
-			return 1;
+			return Sign.PLUS_SIGN;
 		}else if (n < 0) {
-			return -1;
+			return Sign.MINUS_SIGN;
 		}else {
-			return 0;
+			return Sign.ZERO;
 		}
 	}
 	
