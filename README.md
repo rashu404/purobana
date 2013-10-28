@@ -26,7 +26,7 @@ PhysXワールドサンプル
     /* 昼夜の切り替え（メニューより選択） */
     mWorld.darkSwitch();
     
-<img src="http://web-prog.com/wp-content/uploads/dark_ana.png">
+<img src="http://web-prog.com/wp-content/uploads/dark_analog.png">
     
     /* キューブ雨を降らせる（メニューより選択） */
     mWorld.rainSwitch();
