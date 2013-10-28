@@ -12,19 +12,16 @@ import android.content.Context;
 import com.webprog.R;
 import com.webprog.util.RenderUtil;
 
-import com.bulletphysics.collision.shapes.BoxShape;
-import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.*;
 import com.bulletphysics.dynamics.DynamicsWorld;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.linearmath.DefaultMotionState;
-import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.dynamics.*;
+import com.bulletphysics.linearmath.*;
 
-public class Cube{	
+public final class Cube{	
 	private RigidBody mRigidBody;
 	
 	private static FloatBuffer mVertexBuffer;
-	private FloatBuffer mColorBuffer, mNormalBuffer;
+	private FloatBuffer mNormalBuffer;
 	private ByteBuffer mIndexBuffer;
 
 	private static int texture;
@@ -84,38 +81,6 @@ public class Cube{
 			-1.f, 1.f, 1.f, 1.0f, 0.0f,
 		};
 
-		float colors[] = {
-				1.f, 1.f, 1.f, 1.f,
-				1.f, 1.f, 1.f, 1.f,
-				1.f, 1.f, 1.f, 1.f,
-				1.f, 1.f, 1.f, 1.f,
-
-                1.f, 1.f, 0.f, 1.f,
-                1.f, 1.f, 0.f, 1.f,
-                1.f, 1.f, 0.f, 1.f,
-                1.f, 1.f, 0.f, 1.f,
-                
-                1.f, 0.f, 1.f, 1.f,
-                1.f, 0.f, 1.f, 1.f,
-                1.f, 0.f, 1.f, 1.f,
-                1.f, 0.f, 1.f, 1.f,
-                
-                0.f, 1.f, 1.f, 1.f,
-                0.f, 1.f, 1.f, 1.f,
-                0.f, 1.f, 1.f, 1.f,
-                0.f, 1.f, 1.f, 1.f,
-                
-                1.f, 0.f, 0.f, 1.f,
-                1.f, 0.f, 0.f, 1.f,
-                1.f, 0.f, 0.f, 1.f,
-                1.f, 0.f, 0.f, 1.f,
-                
-                0.f, 1.f, 0.f, 1.f,
-                0.f, 1.f, 0.f, 1.f,
-                0.f, 1.f, 0.f, 1.f,
-                0.f, 1.f, 0.f, 1.f,
-		};
-
 		float normals[] = {
 				0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f,
                 0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f,
@@ -139,7 +104,6 @@ public class Cube{
 
 		// それぞれのバッファを作成
 		mVertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
-		mColorBuffer = RenderUtil.allocateFloatBuffer(colors);
 		mNormalBuffer = RenderUtil.allocateFloatBuffer(normals);
 		mIndexBuffer = RenderUtil.allocateByteBuffer(indices);
 
@@ -180,7 +144,6 @@ public class Cube{
 	
 		// 各配列を有効化
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-		gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 		gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
@@ -203,8 +166,7 @@ public class Cube{
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, texture);
 
 		{
-			// カラー配列・法線配列をOpenGL ES上で定義
-			gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColorBuffer);
+			// 法線配列をOpenGL ES上で定義
 			gl.glNormalPointer(GL10.GL_FLOAT, 0, mNormalBuffer);
 		}
 
@@ -213,7 +175,6 @@ public class Cube{
 
 		// 各配列を無効化
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
-		gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 		
@@ -238,8 +199,18 @@ public class Cube{
 		mRigidBody.setWorldTransform(mTransform);
 	}
 	
+	public void initPosition(Vector3f defLinVel, Vector3f defRotate, float x, float y, float z){
+		mTransform.setIdentity();
+		mTransform.origin.set(x, y, z);
+		
+		mRigidBody.setLinearVelocity(defLinVel);
+		mRigidBody.setAngularVelocity(defRotate);
+		mRigidBody.activate(true);
+		mRigidBody.setWorldTransform(mTransform);
+	}
+	
 	public static void init(GL10 gl, Context context){
-		int tex = RenderUtil.returnTex(gl, context, R.drawable.mokume2);
+		int tex = RenderUtil.loadTex(gl, context, R.drawable.mokume2);
 		int vboId = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
 		
 		texture = tex;

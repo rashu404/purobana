@@ -1,49 +1,46 @@
 package com.webprog;
 
-import com.webprog.render.MyRenderer;
-
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.View.OnTouchListener;
-import android.widget.Button;
+import android.view.*;
+import android.widget.LinearLayout;
 
-public class PhysxWorldActivity extends Activity implements OnTouchListener {
+import com.webprog.render.MyRenderer;
+import com.webprog.ui.AnalogStick;
+
+public final class PhysxWorldActivity extends Activity{
 	private static MyRenderer myRenderer;
+	private static AnalogStick analogStick;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		setContent();
+		setAnalogStick();
+		
+		myRenderer = (MyRenderer) findViewById(R.id.renderer);
+	}
+	
+	private void setContent(){
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(R.layout.activity_main);
-
-		this.setButton(R.id.forward_button);
-		this.setButton(R.id.left_button);
-		this.setButton(R.id.right_button);
-		this.setButton(R.id.back_button);
-		
-		myRenderer = (MyRenderer) findViewById(R.id.renderer);
-
 	}
 	
-	private void setButton(int resId){
-		Button btn = (Button) findViewById(resId);
-		btn.setOnTouchListener(this);
+	private void setAnalogStick(){
+		analogStick = new AnalogStick(this);
+		
+		LinearLayout analogLayout = (LinearLayout)findViewById(R.id.analog_stick_layout);
+		analogLayout.addView(analogStick);
 	}
-
+	
 	public boolean onCreateOptionsMenu(Menu menu) {
 
-		menu.add(Menu.NONE, 0, 0, "Dark or NonDark");
-		menu.add(Menu.NONE, 1, 1, "FallingCube");
-		menu.add(Menu.NONE, 2, 2, "InitCubePostion");
+		menu.add(Menu.NONE, 0, 0, "Switch Dark or Noon");
+		menu.add(Menu.NONE, 1, 1, "Falling Cubes");
+		menu.add(Menu.NONE, 2, 2, "Init Cubes Postion");
 
 		return super.onCreateOptionsMenu(menu);
 	};
@@ -56,16 +53,12 @@ public class PhysxWorldActivity extends Activity implements OnTouchListener {
 		return true;
 	}
 
-	@Override
-	public boolean onTouch(View v, MotionEvent e) {
-		MyEvent me = MyEvent.getInstance();
-		me.onButtonEvent(v, e, myRenderer);
-		
-		return false;
-	}
-	
 	public static MyRenderer getMyRenderer(){
 		return myRenderer;
+	}
+	
+	public static AnalogStick getAnalogStick(){
+		return analogStick;
 	}
 
 }

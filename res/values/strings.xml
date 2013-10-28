@@ -4,9 +4,9 @@
     <string name="app_name">PurobanaPhysXWorld</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="dummy_button">Dummy Button</string>
-    <string name="forward">前</string>
-    <string name="left">左</string>
-    <string name="right">右</string>
-	<string name="back">後</string>
+    <string name="forward">↑</string>
+    <string name="left">←</string>
+    <string name="right">→</string>
+	<string name="back">↓</string>
     
 </resources>

@@ -4,23 +4,19 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import javax.vecmath.Vector3f;
 
-import com.bulletphysics.dynamics.DynamicsWorld;
-import com.webprog.MyEvent;
-import com.webprog.objects.Myself;
-import com.webprog.util.PhysicsUtil;
-
 import android.content.Context;
+import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
-	
-	enum Sign{
-		PLUS_SIGN, MINUS_SIGN, ZERO
-	}
-	
+import com.bulletphysics.dynamics.DynamicsWorld;
+import com.webprog.MyEvent;
+import com.webprog.objects.Myself;
+import com.webprog.util.*;
+
+public final class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 	private Context mContext;
 
 	private World mWorld;
@@ -31,19 +27,15 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 	private Vector3f eye = new Vector3f(2f, 10f, 3f);
 	private Vector3f look = new Vector3f(0f, 0f, 1f);
 	private Vector3f up = new Vector3f(0, 0, 1);
-
-	private Vector3f forbackVec;
-	private Vector3f sideVec;
-
-	private boolean isForward, isLeft, isRight, isBack;
 	
-	private float bgColor = 1.0f, bgColorB = 0.83f;
-
+	private int moveAngle;
+	
+	private boolean isMove;
+	
 	public MyRenderer(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		mContext = context;
-
 		mWorld = new World(context);
 		
 		DynamicsWorld dynamicsWorld = mWorld.getDynamicsWorld();
@@ -59,13 +51,17 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		
 		return true;
 	}
-
+	
 	@Override
 	public void onDrawFrame(GL10 gl) {
+		if(isMove) moveEye(moveAngle);
 		
-		this.eyeTranslate();
+		if(mWorld.isDark()){
+			gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		}else {
+			gl.glClearColor(0.525f, 0.7f, 0.9f, 1.0f);
+		}
 		
-		gl.glClearColor(bgColor, bgColor, bgColorB, 1.0f); // 昼夜
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
 		gl.glEnable(GL10.GL_DEPTH_TEST);
@@ -80,70 +76,41 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		mWorld.onDrawFrame(gl);
 	}
 	
-	// eye位置の平行移動をする
-	private void eyeTranslate(){
-		if (isForward()) {
-			this.forbackTranslate(true);
-		}
-
-		if (isLeft()) {
-			this.sideTranslate(true);
-		}
-
-		if (isRight()) {
-			this.sideTranslate(false);
-		}
-
-		if (isBack()) {
-			this.forbackTranslate(false);
-		}
+	// 指定した角度にカメラ位置を移動する
+	public void moveEye(int degTheta){
+		// eye位置から見たlook位置の角度
+		double t = Math.atan2(look.x - eye.x, look.y - eye.y);
+		t = MathUtil.convertSinCosRad(t);
+		
+		// 角度tからdegTheta度回転した角度
+		double theta = t + Math.toRadians(degTheta);
+		
+		// 移動スピード
+		float speed = getMoveSpeed(degTheta);
+		
+		// 加算演算するXとYの値
+		float x = (float)(speed * Math.cos(theta));
+		float y = (float)(speed * Math.sin(theta));
+		
+		setEye(x, y, 0f);
+		setLook(x, y, 0f);
 	}
-
-	// 前後へ移動するメソッド
-	private void forbackTranslate(boolean forward){
-		if(forbackVec == null)
-			forbackVec = new Vector3f();
-		
-		// eyeからlookへ向かう単位ベクトルを作成
-		forbackVec.sub(look, eye);
-		forbackVec.normalize();
-
-		// ベクトルのスケーリングをする
-		forbackVec.scale(0.15f);
-
-		if(forward){
-			setEye(forbackVec.x, forbackVec.y, 0f);
-			setLook(forbackVec.x, forbackVec.y, 0f);
-		}else {
-			setEye(-forbackVec.x, -forbackVec.y, 0f);
-			setLook(-forbackVec.x, -forbackVec.y, 0f);
-		}
-	}
-
-	// 左右へ移動するメソッド
-	private void sideTranslate(boolean left) {
-		if(forbackVec == null)
-			forbackVec = new Vector3f();
-		
-		// eyeからlookへ向かう単位ベクトルを作成
-		forbackVec.sub(look, eye);
-		forbackVec.normalize();
-		
-		if(sideVec == null)
-			sideVec = new Vector3f();
-		
-		// 上方向のベクトルとeyeからlookへ向かうベクトルの外積
-		sideVec.cross(up, forbackVec);
-		sideVec.normalize();
-		sideVec.scale(0.15f);
 	
-		if(left){
-			setEye(sideVec.x, sideVec.y, 0f);
-			setLook(sideVec.x, sideVec.y, 0f);
+	// 解像度に合わせたθ度の移動速度を返す
+	private float getMoveSpeed(int degTheta){
+		Point size = RenderUtil.getSizeXY(mContext);
+		
+		double radTheta = Math.toRadians(degTheta);
+		float speed = 0.0f;
+		if(size.x < size.y){
+			float disp = (float)size.y / size.x / 6;
+			speed = (float) ((float)disp - Math.abs(Math.sin(radTheta) / 13.5));
 		}else {
-			setEye(-sideVec.x, -sideVec.y, 0f);
-			setLook(-sideVec.x, -sideVec.y, 0f);
+			float disp = (float)size.x / size.y / 8;
+			speed = (float) ((float)disp + Math.abs(Math.sin(radTheta)/ 13.5));
 		}
+		
+		return speed;
 	}
 
 	@Override
@@ -154,7 +121,7 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		this.height = (float) height;
 
 		gl.glViewport(0, 0, width, height);
-
+		
 		gl.glMatrixMode(GL10.GL_PROJECTION);
 		gl.glLoadIdentity();
 
@@ -170,64 +137,30 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		return mWorld;
 	}
 
-	public void setDark(boolean dark){
-		if(dark){
-			bgColor = 0f;
-			bgColorB = 0f;
-		}else {
-			bgColor = 1.0f;
-			bgColorB = 0.83f;
-		}
-	}
-
-	public void setEye(float x, float y, float z) {
+	private void setEye(float x, float y, float z) {
 		eye.x += x;
 		eye.y += y;
 		eye.z += z;
 	}
 
-	public void setLook(float x, float y, float z) {
+	private void setLook(float x, float y, float z) {
 		look.x += x;
 		look.y += y;
 		look.z += z;
 	}
-
-	public void setForward(boolean arg) {
-		this.isForward = arg;
-	}
-
-	public void setLeft(boolean arg) {
-		this.isLeft = arg;
-	}
-
-	public void setRight(boolean arg) {
-		this.isRight = arg;
-	}
-
-	public void setBack(boolean arg) {
-		this.isBack = arg;
-	}
-
-	public boolean isForward() {
-		return isForward;
-	}
-
-	public boolean isLeft() {
-		return isLeft;
-	}
-
-	public boolean isRight() {
-		return isRight;
-	}
-
-	public boolean isBack() {
-		return isBack;
+	
+	public void setMoveAngle(int moveAngle){
+		this.moveAngle = moveAngle;
 	}
 	
+	public void setMove(boolean isMove){
+		this.isMove = isMove;
+	}
+
+	// タップ位置へキューブ弾を発射
 	public void shootCube(MotionEvent event){
-		// タップ位置へキューブ弾を発射
-		Vector3f point = PhysicsUtil.getRayTo((int) event.getX(), (int) event.getY(), eye, look,
-				up, width, height);
+		Vector3f point = PhysicsUtil.getRayTo(
+				(int) event.getX(), (int) event.getY(), eye, look, up, width, height);
 		mWorld.shootCube(point, eye);
 	}
 	
@@ -235,7 +168,7 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 	public void lookRotation(double degH){
 		// 現在の水平の視点の角度を極座標で求める
 		double thetaH = Math.atan2(look.x - eye.x , look.y - eye.y);
-		thetaH = convertRectRad(thetaH);
+		thetaH = MathUtil.convertSinCosRad(thetaH);
 	
 		// eyeからlookまでの水平の距離
 		double rH = Math.sqrt(Math.pow(look.x - eye.x, 2) + Math.pow(look.y - eye.y, 2));	
@@ -249,42 +182,6 @@ public class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
 		
 		look.x = (float) x;
 		look.y = (float) y;
-	}
-	
-	/**
-	 * 極座標θを直交座標の角度θにして返す
-	 * 
-	 * @param polarRad 極座標θのラジアン値
-	 * @return ラジアン値
-	 */
-	private double convertRectRad(double polarRad){
-		switch (getSign(polarRad)) {
-		case PLUS_SIGN:
-			
-			// 符号がプラス
-			return Math.toRadians(450) - polarRad;
-			
-		case MINUS_SIGN:
-			
-			// 符号がマイナス
-			return Math.toRadians(90) + Math.abs(polarRad);
-			
-		default:
-			break;
-		}
-		
-		return 0;
-	}
-	
-	// double値の符号を取得
-	private Sign getSign(double n){
-		if(n > 0){
-			return Sign.PLUS_SIGN;
-		}else if (n < 0) {
-			return Sign.MINUS_SIGN;
-		}else {
-			return Sign.ZERO;
-		}
 	}
 	
 }

@@ -9,16 +9,13 @@ import javax.vecmath.Vector3f;
 
 import android.content.Context;
 
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.collision.shapes.StaticPlaneShape;
-import com.bulletphysics.dynamics.DynamicsWorld;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import com.bulletphysics.collision.shapes.*;
+import com.bulletphysics.dynamics.*;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.webprog.R;
 import com.webprog.util.RenderUtil;
 
-public class Sky {
+public final class Sky {
 	private FloatBuffer mVertexBuffer;
 	private ByteBuffer mIndexBuffer;
 
@@ -34,10 +31,10 @@ public class Sky {
 
 	private void createGeometry() {
 		float vertices[] = {
-				-1000.f, -1000.f, 30.f, 0.0f, 0.0f,
-				-1000.f, 1000.f, 30.f, 0.0f, 1.0f,
-				1000.f, -1000.f, 30.f, 1.0f, 0.0f,
-				1000.f, 1000.f, 30.f, 1.0f, 1.0f,
+				-1000.f, -1000.f, 50.f, 0.0f, 0.0f,
+				-1000.f, 1000.f, 50.f, 0.0f, 1.0f,
+				1000.f, -1000.f, 50.f, 1.0f, 0.0f,
+				1000.f, 1000.f, 50.f, 1.0f, 1.0f,
 		};
 
 		byte indices[] = { 0, 1, 2, 3, };
@@ -97,7 +94,7 @@ public class Sky {
 	}
 
 	public void init(GL10 gl, Context context) {
-		mTexture = RenderUtil.returnTex(gl, context, R.drawable.sky6);
+		mTexture = RenderUtil.loadTex(gl, context, R.drawable.blue_sky);
 		mVBO = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
 	}
 

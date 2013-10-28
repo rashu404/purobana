@@ -22,20 +22,18 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int black_overlay=0x7f040000;
     }
     public static final class drawable {
-        public static final int body3=0x7f020000;
+        public static final int blue_sky=0x7f020000;
         public static final int darkground=0x7f020001;
         public static final int darksky=0x7f020002;
-        public static final int ground3=0x7f020003;
-        public static final int ic_launcher=0x7f020004;
-        public static final int mokume2=0x7f020005;
-        public static final int sky6=0x7f020006;
+        public static final int green_field=0x7f020003;
+        public static final int ground3=0x7f020004;
+        public static final int ic_launcher=0x7f020005;
+        public static final int mokume2=0x7f020006;
+        public static final int sky6=0x7f020007;
     }
     public static final class id {
-        public static final int back_button=0x7f070004;
-        public static final int forward_button=0x7f070001;
-        public static final int left_button=0x7f070002;
+        public static final int analog_stick_layout=0x7f070001;
         public static final int renderer=0x7f070000;
-        public static final int right_button=0x7f070003;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
@@ -112,7 +110,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 
           <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
-          @attr name android:buttonBarButtonStyle
+          @attr name com.webprog:buttonBarButtonStyle
         */
         public static final int ButtonBarContainerTheme_buttonBarButtonStyle = 1;
         /**
@@ -122,7 +120,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 
           <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
-          @attr name android:buttonBarStyle
+          @attr name com.webprog:buttonBarStyle
         */
         public static final int ButtonBarContainerTheme_buttonBarStyle = 0;
     };

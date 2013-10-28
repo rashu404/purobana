@@ -3,15 +3,13 @@ package com.webprog.util;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
-import com.bulletphysics.collision.dispatch.CollisionConfiguration;
-import com.bulletphysics.collision.dispatch.CollisionDispatcher;
-import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
-import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
-import com.bulletphysics.dynamics.DynamicsWorld;
+import com.bulletphysics.collision.dispatch.*;
+import com.bulletphysics.dynamics.*;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 
-public class PhysicsUtil {
-	private static Vector3f rayFrom, rayForward, hor, vertical, dHor, dVert, rayToCenter, tmp1, tmp2, rayTo;
+public final class PhysicsUtil {
+	private static Vector3f rayFrom, rayForward, hor, vertical, 
+					dHor, dVert, rayToCenter, tmp1, tmp2, rayTo;
 
 	/**
 	 * 初期化したダイナミクスワールドを返す

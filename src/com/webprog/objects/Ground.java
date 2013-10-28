@@ -9,16 +9,13 @@ import javax.vecmath.Vector3f;
 
 import android.content.Context;
 
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.collision.shapes.StaticPlaneShape;
-import com.bulletphysics.dynamics.DynamicsWorld;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import com.bulletphysics.collision.shapes.*;
+import com.bulletphysics.dynamics.*;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.webprog.R;
 import com.webprog.util.RenderUtil;
 
-public class Ground {
+public final class Ground {
 	private FloatBuffer mVertexBuffer;
 	private ByteBuffer mIndexBuffer;
 
@@ -35,9 +32,9 @@ public class Ground {
 	private void createGeometry() {
 		float vertices[] = {
 				-1000.f, -1000.f, 0.f, 0.0f, 0.0f, 
-				-1000.f, 1000.f, 0.f, 0.0f, 200.0f,
-				1000.f, -1000.f, 0.f, 200.0f, 0.0f, 
-				1000.f, 1000.f, 0.f, 200.0f, 200.0f,
+				-1000.f, 1000.f, 0.f, 0.0f, 300.0f,
+				1000.f, -1000.f, 0.f, 300.0f, 0.0f, 
+				1000.f, 1000.f, 0.f, 300.0f, 300.0f,
 		};
 
 		byte indices[] = { 0, 1, 2, 3, };
@@ -90,10 +87,10 @@ public class Ground {
 		// テクスチャの有効化と関連付け
 		gl.glEnable(GL11.GL_TEXTURE_2D);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTexture);
-
+		
 		// インデックスバッファを元に描画
 		gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
-
+		
 		// 頂点配列・テクスチャ配列の無効化
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
@@ -108,7 +105,7 @@ public class Ground {
 	}
 
 	public void init(GL10 gl, Context context) {
-		mTexture = RenderUtil.returnTex(gl, context, R.drawable.ground3);
+		mTexture = RenderUtil.loadTex(gl, context, R.drawable.green_field);
 		mVBO = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
 	}
 
