@@ -13,14 +13,16 @@ import com.bulletphysics.collision.shapes.*;
 import com.bulletphysics.dynamics.*;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.webprog.R;
-import com.webprog.util.RenderUtil;
+import com.webprog.render.World.Grobal;
+import com.webprog.tool.RenderUtil;
 
 public final class Ground {
-	private FloatBuffer mVertexBuffer;
-	private ByteBuffer mIndexBuffer;
+	private FloatBuffer vertexBuffer;
+	private ByteBuffer normalBuffer;
+	private ByteBuffer indexBuffer;
 
-	private int mTexture;
-	private int mVBO;
+	private int texture;
+	private int vbo;
 	
 	public Ground(DynamicsWorld world) {
 		createGeometry();
@@ -36,24 +38,32 @@ public final class Ground {
 				1000.f, -1000.f, 0.f, 300.0f, 0.0f, 
 				1000.f, 1000.f, 0.f, 300.0f, 300.0f,
 		};
+		
+		byte normals[] = {
+				0, 0, 1,
+				0, 0, 1,
+				0, 0, 1,
+				0, 0, 1,
+		};
 
 		byte indices[] = { 0, 1, 2, 3, };
 
-		mVertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
-		mIndexBuffer = RenderUtil.allocateByteBuffer(indices);
+		this.vertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
+		this.normalBuffer = RenderUtil.allocateByteBuffer(normals);
+		this.indexBuffer = RenderUtil.allocateByteBuffer(indices);
 	}
 
 	// 静的剛体の作成
 	private RigidBody createRigidBody() {
+		Vector3f planeNormal = Grobal.tmpVec;
+		planeNormal.set(0.f, 0.f, 1.f);
+		
 		// 静的剛体のCollisionShapeを作成
-		CollisionShape shape = new StaticPlaneShape(new Vector3f(0.f, 0.f, 1.f), 0);
-
+		CollisionShape shape = new StaticPlaneShape(planeNormal, 0);
+		
 		DefaultMotionState motionState = new DefaultMotionState();
 
-		// 剛体の作成情報を渡す
-		RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, motionState, shape);
-
-		return new RigidBody(rbInfo);
+		return new RigidBody(0, motionState, shape);
 	}
 
 	public void draw(GL10 gl) {
@@ -68,13 +78,14 @@ public final class Ground {
 		
 		// 頂点配列・テクスチャ配列を有効化
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
 		GL11 gl11 = (GL11) gl;
 		
 		// VBOを関連付け
-		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, mVBO);
-		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, mVertexBuffer.capacity() * 4, mVertexBuffer, GL11.GL_STATIC_DRAW);
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, vbo);
+		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, vertexBuffer.capacity() * 4, vertexBuffer, GL11.GL_STATIC_DRAW);
 		
 		{
 			// 頂点配列・テクスチャ配列をOpenGL ES上で定義
@@ -86,13 +97,19 @@ public final class Ground {
 
 		// テクスチャの有効化と関連付け
 		gl.glEnable(GL11.GL_TEXTURE_2D);
-		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTexture);
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, texture);
+		
+		{
+			// 法線配列をOpenGL ES上で定義
+			gl.glNormalPointer(GL10.GL_UNSIGNED_BYTE, 0, normalBuffer);
+		}
 		
 		// インデックスバッファを元に描画
-		gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
+		gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4, GL10.GL_UNSIGNED_BYTE, indexBuffer);
 		
 		// 頂点配列・テクスチャ配列の無効化
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
 		// テクスチャの無効化
@@ -105,8 +122,8 @@ public final class Ground {
 	}
 
 	public void init(GL10 gl, Context context) {
-		mTexture = RenderUtil.loadTex(gl, context, R.drawable.green_field);
-		mVBO = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
+		texture = RenderUtil.loadTex(gl, context, R.drawable.green_field);
+		vbo = RenderUtil.makeFloatVBO((GL11)gl, vertexBuffer);
 	}
 
 }

@@ -4,16 +4,37 @@ import android.graphics.Canvas;
 import android.view.*;
 
 import com.webprog.render.*;
+import com.webprog.tool.MathUtil;
 import com.webprog.ui.AnalogStick;
-import com.webprog.util.MathUtil;
 
 public final class MyEvent {
 	private static MyEvent instance;
 
-	private float distanceX;
-	private long tapUpMillis;
-
+	private double[] sinCache = new double[361], 
+					 cosCache = new double[361];
+	
+	private long touchDownTime;
+	private float lastX, lastY;
+	
 	private MyEvent() {
+		setSinCosCache();
+	}
+	
+	public void onClickButton(View v, World world){
+		switch (v.getId()) {
+		case R.id.noon_or_dark_button:
+			world.darkSwitch();
+			break;
+		case R.id.init_cube_button:
+			world.initCubePosition();
+			world.initDominoPosition();
+			break;
+		case R.id.start_domino_button:
+			world.startDomino();
+			break;
+		default:
+			break;
+		}
 	}
 
 	// アナログスティックのタッチイベント
@@ -24,19 +45,19 @@ public final class MyEvent {
 		
 		// アナログスティック位置の極座標
 		double anaAng = Math.atan2(e.getX() - centerX, e.getY() - centerY);
-		anaAng = MathUtil.convertSinCosRad(anaAng);
+		anaAng = MathUtil.convertAtan2To360AngRad(anaAng) + (Math.PI/180*90);
 		
-		// カメラ位置の移動先の角度
-		double moveAng = Math.atan2(e.getX() - centerX, centerY - e.getY());
-		moveAng = MathUtil.convertAnalogRad(moveAng);
+		if((180/Math.PI*anaAng) > 360){
+			anaAng -= Math.PI/180*360;
+		}
 		
 		// アナログスティックを倒す最大値
 		float r = canvas.getWidth() / 6;
 		
-		// アナログスティック位置
-		float analogStickX = (float) (r * Math.cos(anaAng)) + centerX;
-		float analogStickY = (float) (r * Math.sin(anaAng)) + centerY;
-				
+		int idx = (int) (180/Math.PI*anaAng);
+		float analogStickX = (float) (r * -cosCache[idx]) + centerX;
+		float analogStickY = (float) (r * sinCache[idx]) + centerY;
+		
 		boolean onAnalogStick = true;
 		if(e.getAction() == MotionEvent.ACTION_UP){
 			analogStickX = centerX;
@@ -51,38 +72,25 @@ public final class MyEvent {
 		MyRenderer myRenderer = PhysxWorldActivity.getMyRenderer();
 		myRenderer.setMove(onAnalogStick);
 		
-		myRenderer.setMoveAngle((int)Math.toDegrees(moveAng));
+		myRenderer.setMoveAngle((int)(180/Math.PI*anaAng));
 	}
-
-	// レンダラ上のタッチイベント
-	public void onRenderEvent(MotionEvent event, MyRenderer myRenderer){
-
+	
+	public void onRendererTouch(MotionEvent event, MyRenderer myRenderer){
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-
-			distanceX = event.getX();
-			tapUpMillis = System.currentTimeMillis();
-
+			this.touchDownTime = System.currentTimeMillis();
+			this.lastX = event.getX();
+			this.lastY = event.getY();
 			break;
-
 		case MotionEvent.ACTION_MOVE:
-
-			myRenderer.lookRotation((event.getX() - distanceX) / -10);
-
-			distanceX = event.getX();
-
+			myRenderer.lookRotation((event.getX()-lastX)/-10, (event.getY()-lastY)/-10);
+			this.lastX = event.getX();
+			this.lastY = event.getY();
 			break;
-
 		case MotionEvent.ACTION_UP:
-
-			long cTimeMillis = System.currentTimeMillis();
-			long diffTime = cTimeMillis - tapUpMillis;
-
-			if(diffTime < 100)
-				myRenderer.shootCube(event);
-
+			long difTime = System.currentTimeMillis() - touchDownTime;
+			if(difTime < 100) myRenderer.shootCube(event);
 			break;
-
 		default:
 			break;
 		}
@@ -105,11 +113,28 @@ public final class MyEvent {
 			break;
 		}
 	}
+	
+	public double[] getSinCache(){
+		return this.sinCache;
+	}
+	
+	public double[] getCosCache(){
+		return this.cosCache;
+	}
+	
+	public void setSinCosCache(){
+		if(sinCache[45] == 0 && cosCache[45] == 0){
+			for(int i = 0; i < 361; i++){
+				// Math.toRadians()よりも手動の方が速い
+				double angRad = Math.PI / 180 * i;
+				sinCache[i] = Math.sin(angRad);
+				cosCache[i] = Math.cos(angRad);
+			}
+		}
+	}
 
 	public static MyEvent getInstance(){
-		if(instance == null)
-			instance = new MyEvent();
-
+		if(instance == null) instance = new MyEvent();
 		return instance;
 	}
 }

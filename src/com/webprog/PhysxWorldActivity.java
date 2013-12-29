@@ -2,13 +2,19 @@ package com.webprog;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.*;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.webprog.render.MyRenderer;
 import com.webprog.ui.AnalogStick;
 
-public final class PhysxWorldActivity extends Activity{
+public final class PhysxWorldActivity extends Activity implements OnClickListener{
 	private static MyRenderer myRenderer;
 	private static AnalogStick analogStick;
 
@@ -18,6 +24,7 @@ public final class PhysxWorldActivity extends Activity{
 
 		setContent();
 		setAnalogStick();
+		setButton();
 		
 		myRenderer = (MyRenderer) findViewById(R.id.renderer);
 	}
@@ -34,6 +41,12 @@ public final class PhysxWorldActivity extends Activity{
 		
 		LinearLayout analogLayout = (LinearLayout)findViewById(R.id.analog_stick_layout);
 		analogLayout.addView(analogStick);
+	}
+	
+	private void setButton(){
+		((Button)findViewById(R.id.noon_or_dark_button)).setOnClickListener(this);
+		((Button)findViewById(R.id.start_domino_button)).setOnClickListener(this);
+		((Button)findViewById(R.id.init_cube_button)).setOnClickListener(this);
 	}
 	
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -59,6 +72,11 @@ public final class PhysxWorldActivity extends Activity{
 	
 	public static AnalogStick getAnalogStick(){
 		return analogStick;
+	}
+
+	@Override
+	public void onClick(View v) {
+		MyEvent.getInstance().onClickButton(v, myRenderer.getWorld());
 	}
 
 }

@@ -7,56 +7,49 @@ import com.bulletphysics.collision.dispatch.*;
 import com.bulletphysics.collision.shapes.*;
 import com.bulletphysics.dynamics.*;
 import com.bulletphysics.linearmath.*;
+import com.webprog.render.World.Grobal;
 
-/**
- *  カメラ位置（eye）のCollisionShapeを作成・同期するクラス
- */
+// カメラ位置（eye）のCollisionShapeを作成・同期するクラス
 public final class Myself{	
-	private RigidBody mRigidBody;
-	private Transform mTransform;
+	private RigidBody rigidBody;
+	private Transform transform;
 			
 	public Myself(DynamicsWorld world, Vector3f eye) {
 		// トランスフォーム（位置と回転）を初期化
-		mTransform = new Transform();
-		mTransform.setIdentity();
-		mTransform.origin.set(eye);
+		this.transform = new Transform();
+		this.transform.setIdentity();
+		this.transform.origin.set(eye);
 
-		DefaultMotionState motionState = new DefaultMotionState(mTransform);
+		DefaultMotionState motionState = new DefaultMotionState(transform);
 		
 		// 視覚とダイナミクスワールドを同期
-		createRigidBody(motionState);
+		createKinematicBody(motionState);
 
 		// ワールドへ剛体を追加
-		world.addRigidBody(mRigidBody);
+		world.addRigidBody(rigidBody);
 	}
 
 	// kinematic剛体の作成メソッド
-	private void createRigidBody(DefaultMotionState motionState) {
+	private void createKinematicBody(DefaultMotionState motionState) {
 		// CollisionShapeを作成
 		CollisionShape shape = new CapsuleShapeZ(1f, 3f);
 
-		// 剛体の作成情報を渡す
-		Vector3f localInertia = new Vector3f(10f, 10f, 10f);
-		RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(3f, motionState, 
-				shape, localInertia);
-	
+		// 剛体の慣性
+		Vector3f localInertia = Grobal.tmpVec;
+		localInertia.set(10f, 10f, 10f);
+		
 		// rbInfoを基に剛体を作成
-		mRigidBody = new RigidBody(rbInfo);
+		this.rigidBody = new RigidBody(3f, motionState, shape, localInertia);
 		
 		// kinematic剛体の設定
-		mRigidBody.setCollisionFlags(mRigidBody.getCollisionFlags() 
+		this.rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() 
 				| CollisionFlags.KINEMATIC_OBJECT);
-		mRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
+		this.rigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
 	}
 
-	/**
-	 * カメラ位置とkinematic剛体の位置を同期
-	 * 
-	 * @param gl
-	 * @param eye
-	 */
+	// カメラ位置とkinematic剛体の位置を同期
 	public void sync(GL10 gl, Vector3f eye) {
-		mTransform.origin.set(eye);
-		mRigidBody.getMotionState().setWorldTransform(mTransform);
+		this.transform.origin.set(eye);
+		this.rigidBody.getMotionState().setWorldTransform(transform);
 	}
 }

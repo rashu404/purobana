@@ -1,4 +1,4 @@
-package com.webprog.util;
+package com.webprog.tool;
 
 public class MathUtil {
 	
@@ -51,6 +51,21 @@ public class MathUtil {
 			break;
 		}
 		
+		return 0;
+	}
+	
+	/**
+	 * Math.atan2()で求めた極座標θを360度系に変換して返す
+	 * 
+	 * @param atan2Rad Math.atan2()の返り値
+	 * @return ラジアン値
+	 */
+	public static double convertAtan2To360AngRad(double atan2Rad){
+		switch (getSign(atan2Rad)) {
+		case PLUS_SIGN: return atan2Rad;
+		case MINUS_SIGN: return Math.toRadians(360) + atan2Rad;
+		default:break;
+		}
 		return 0;
 	}
 	

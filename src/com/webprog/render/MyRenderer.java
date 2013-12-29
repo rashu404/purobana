@@ -14,49 +14,82 @@ import android.view.MotionEvent;
 import com.bulletphysics.dynamics.DynamicsWorld;
 import com.webprog.MyEvent;
 import com.webprog.objects.Myself;
-import com.webprog.util.*;
+import com.webprog.render.World.Grobal;
+import com.webprog.tool.MathUtil;
+import com.webprog.tool.PhysicsUtil;
+import com.webprog.tool.RenderUtil;
 
 public final class MyRenderer extends GLSurfaceView implements GLSurfaceView.Renderer{
-	private Context mContext;
+	private Context context;
 
-	private World mWorld;
-	private float width, height;
+	private World world;
 
-	private Myself mOneself;
+	private Myself myself;
 	
 	private Vector3f eye = new Vector3f(2f, 10f, 3f);
-	private Vector3f look = new Vector3f(0f, 0f, 1f);
+	private Vector3f look = new Vector3f();
 	private Vector3f up = new Vector3f(0, 0, 1);
 	
 	private int moveAngle;
-	
+	private float moveAccelDecel;
 	private boolean isMove;
+	
+	private float eyeAngleDegH = 250;
+	private float eyeAngleDegV = 5;
+	
 	
 	public MyRenderer(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
-		mContext = context;
-		mWorld = new World(context);
+		this.context = context;
+		this.world = new World(context);
 		
-		DynamicsWorld dynamicsWorld = mWorld.getDynamicsWorld();
-		mOneself = new Myself(dynamicsWorld, eye);
-				
-		setRenderer(this);
+		DynamicsWorld dynamicsWorld = world.getDynamicsWorld();
+		this.myself = new Myself(dynamicsWorld, eye);
+		
+		MyEvent me = MyEvent.getInstance();
+		double[] sinCache = me.getSinCache();
+		double[] cosCache = me.getCosCache();
+		
+		Vector3f ray = Grobal.tmpVec;
+		ray.sub(look, eye);
+		
+		this.lookRotRadius = Math.sqrt(
+			(ray.x * ray.x)
+			+ (ray.y * ray.y)
+			+ (ray.z * ray.z)
+		);
+		
+		int idxV = (int) this.eyeAngleDegV;
+		int idxH = (int) this.eyeAngleDegH;
+		float x = (float) (this.lookRotRadius * cosCache[idxV] * cosCache[idxH]) + eye.x;
+		float y = (float) (this.lookRotRadius * cosCache[idxV] * sinCache[idxH]) + eye.y;
+		float z = (float) (this.lookRotRadius * sinCache[idxV]);
+		
+		this.look.set(x, y, z);
+		
+		this.setRenderer(this);
 	}
 	
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		MyEvent myEvent = MyEvent.getInstance();
-		myEvent.onRenderEvent(event, this);
-		
+	public boolean onTouchEvent(MotionEvent event) {		
+		MyEvent.getInstance().onRendererTouch(event, this);
 		return true;
 	}
 	
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		if(isMove) moveEye(moveAngle);
+		if(this.isMove) {
+			if(this.moveAccelDecel < 1.0f) this.moveAccelDecel += 0.05f;
+			this.moveEye(this.moveAngle);
+		}else{
+			if(this.moveAccelDecel > 0.0f){
+				this.moveAccelDecel -= 0.05f;
+				this.moveEye(this.moveAngle);
+			}
+		}
 		
-		if(mWorld.isDark()){
+		if(this.world.isDark()){
 			gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		}else {
 			gl.glClearColor(0.525f, 0.7f, 0.9f, 1.0f);
@@ -71,54 +104,54 @@ public final class MyRenderer extends GLSurfaceView implements GLSurfaceView.Ren
 
 		GLU.gluLookAt(gl, eye.x, eye.y, eye.z, look.x, look.y, look.z, up.x, up.y, up.z);
 		
-		mOneself.sync(gl, eye);
+		this.myself.sync(gl, eye);
 
-		mWorld.onDrawFrame(gl);
+		this.world.onDrawFrame(gl);
 	}
 	
 	// 指定した角度にカメラ位置を移動する
-	public void moveEye(int degTheta){
+	public void moveEye(int moveAngleDeg){
 		// eye位置から見たlook位置の角度
 		double t = Math.atan2(look.x - eye.x, look.y - eye.y);
-		t = MathUtil.convertSinCosRad(t);
+		t = MathUtil.convertAtan2To360AngRad(-t);
 		
-		// 角度tからdegTheta度回転した角度
-		double theta = t + Math.toRadians(degTheta);
+		int moveAngDeg = (int)(180/Math.PI*t) + moveAngleDeg;
+		if(moveAngDeg > 360) moveAngDeg -= 360;
 		
-		// 移動スピード
-		float speed = getMoveSpeed(degTheta);
+		float moveSpeed = getMoveSpeed();
 		
-		// 加算演算するXとYの値
-		float x = (float)(speed * Math.cos(theta));
-		float y = (float)(speed * Math.sin(theta));
+		MyEvent me = MyEvent.getInstance();
+		double[] sinAngleRadCache = me.getSinCache();
+		double[] cosAngleRadCache = me.getCosCache(); 
 		
-		setEye(x, y, 0f);
-		setLook(x, y, 0f);
+		int idx = moveAngDeg;
+		float x = (float)(moveSpeed * -cosAngleRadCache[idx]);
+		float y = (float)(moveSpeed * -sinAngleRadCache[idx]);
+		
+		this.setEye(x, y, 0f);
+		this.setLook(x, y, 0f);
 	}
 	
-	// 解像度に合わせたθ度の移動速度を返す
-	private float getMoveSpeed(int degTheta){
-		Point size = RenderUtil.getSizeXY(mContext);
+	// 解像度に合わせた移動速度を返す
+	private float getMoveSpeed(){
+		Point dispSize = RenderUtil.getSizeXY(this.context);
+		double[] cosCache = MyEvent.getInstance().getCosCache();
 		
-		double radTheta = Math.toRadians(degTheta);
-		float speed = 0.0f;
-		if(size.x < size.y){
-			float disp = (float)size.y / size.x / 6;
-			speed = (float) ((float)disp - Math.abs(Math.sin(radTheta) / 13.5));
-		}else {
-			float disp = (float)size.x / size.y / 8;
-			speed = (float) ((float)disp + Math.abs(Math.sin(radTheta)/ 13.5));
+		float moveSpeed = 0.0f;
+		float dispAver = (float)dispSize.x / dispSize.y / 6;
+		
+		double val = 0;
+		if((val = cosCache[this.moveAngle]) < 0){
+			val = -val;
 		}
-		
-		return speed;
+		moveSpeed = (float) (dispAver + (val / 13.5));
+				
+		return moveSpeed * moveAccelDecel;
 	}
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 		float mFovy = 75;
-
-		this.width = (float) width;
-		this.height = (float) height;
 
 		gl.glViewport(0, 0, width, height);
 		
@@ -130,23 +163,23 @@ public final class MyRenderer extends GLSurfaceView implements GLSurfaceView.Ren
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		mWorld.worldInit(gl, mContext);
+		this.world.worldInit(gl, context);
 	}
 	
 	public World getWorld(){
-		return mWorld;
+		return this.world;
 	}
 
 	private void setEye(float x, float y, float z) {
-		eye.x += x;
-		eye.y += y;
-		eye.z += z;
+		this.eye.x += x;
+		this.eye.y += y;
+		this.eye.z += z;
 	}
 
 	private void setLook(float x, float y, float z) {
-		look.x += x;
-		look.y += y;
-		look.z += z;
+		this.look.x += x;
+		this.look.y += y;
+		this.look.z += z;
 	}
 	
 	public void setMoveAngle(int moveAngle){
@@ -156,32 +189,41 @@ public final class MyRenderer extends GLSurfaceView implements GLSurfaceView.Ren
 	public void setMove(boolean isMove){
 		this.isMove = isMove;
 	}
+	
+	public void setMoveAccelDecel(float moveAccelDecel){
+		this.moveAccelDecel = moveAccelDecel;
+	}
 
 	// タップ位置へキューブ弾を発射
 	public void shootCube(MotionEvent event){
 		Vector3f point = PhysicsUtil.getRayTo(
-				(int) event.getX(), (int) event.getY(), eye, look, up, width, height);
-		mWorld.shootCube(point, eye);
+				(int) event.getX(), (int) event.getY(), eye, look, up, getWidth(), getHeight());
+		this.world.shootCube(point, eye);
 	}
+	
+	private double lookRotRadius;
 	
 	// eyeの周囲を回転するlookを求める
-	public void lookRotation(double degH){
-		// 現在の水平の視点の角度を極座標で求める
-		double thetaH = Math.atan2(look.x - eye.x , look.y - eye.y);
-		thetaH = MathUtil.convertSinCosRad(thetaH);
-	
-		// eyeからlookまでの水平の距離
-		double rH = Math.sqrt(Math.pow(look.x - eye.x, 2) + Math.pow(look.y - eye.y, 2));	
+	public void lookRotation(float angDegH, float angDegV){
+		MyEvent me = MyEvent.getInstance();
+		double[] sinCache = me.getSinCache();
+		double[] cosCache = me.getCosCache();
 		
-		// 角度を加算
-		thetaH += Math.toRadians(degH);
+		this.eyeAngleDegH += angDegH;
+		if(this.eyeAngleDegH > 360) this.eyeAngleDegH -= 360;
+		if(this.eyeAngleDegH < 0) this.eyeAngleDegH += 360;
+				
+		this.eyeAngleDegV += angDegV;
+		if(this.eyeAngleDegV > 48) this.eyeAngleDegV -= angDegV;
+		if(this.eyeAngleDegV < 0) this.eyeAngleDegV = 0;
+				
+		int idxV = (int) this.eyeAngleDegV;
+		int idxH = (int) this.eyeAngleDegH;
+		float x = (float) (this.lookRotRadius * cosCache[idxV] * cosCache[idxH]) + eye.x;
+		float y = (float) (this.lookRotRadius * cosCache[idxV] * sinCache[idxH]) + eye.y;
+		float z = (float) (this.lookRotRadius * sinCache[idxV]);
 		
-		// lookのX座標とY座標を求める
-		double x = rH * Math.cos(thetaH) + eye.x;
-		double y = rH * Math.sin(thetaH) + eye.y;
-		
-		look.x = (float) x;
-		look.y = (float) y;
+		this.look.set(x, y, z);
 	}
-	
+
 }

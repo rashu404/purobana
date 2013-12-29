@@ -1,4 +1,4 @@
-package com.webprog.util;
+package com.webprog.tool;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -17,6 +17,11 @@ public final class RenderUtil {
 	private static final int SIZEOF_BYTE = Byte.SIZE / 8;
 	private static final int SIZEOF_SHORT = Short.SIZE / 8;
 	private static final int SIZEOF_FLOAT = Float.SIZE / 8;
+	
+	private static Point size;
+	
+	private static float[] matAmbient = new float[4];
+	private static float[] matDiffuse = new float[4];
 	
 	private RenderUtil() {
 	}
@@ -43,9 +48,9 @@ public final class RenderUtil {
 
 	// 光源を有効化
 	public static void enableLight(GL10 gl) {
-		float[] lightAmbient = new float[] { 0.38f, 0.38f, 0.38f, 1.f };
+		float[] lightAmbient = new float[] { 0.5f, 0.5f, 0.5f, 1.f };
 		float[] lightDiffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.f };
-		float[] lightPos = new float[] { 8, 8, 25, 0 };
+		float[] lightPos = new float[] { 10, 10, 3, 0 };
 
 		gl.glEnable(GL10.GL_LIGHTING);
 		gl.glEnable(GL10.GL_LIGHT0);
@@ -57,17 +62,26 @@ public final class RenderUtil {
 
 	// 夜のマテリアルを有効化
 	public static void enableDarkMaterial(GL10 gl) {
-		float[] matAmbient = new float[] { 0.6f, 0.6f, 0.9f, 1.0f };
-		float[] matDiffuse = new float[] { 0.0f, 0.0f, 1.0f, 1.0f };
-
+		matAmbient[0] = 0.6f;
+		matAmbient[1] = 0.6f;
+		matAmbient[2] = 0.9f;
+		matAmbient[3] = 1.0f;
+		
+		matDiffuse[0] = 0.0f;
+		matDiffuse[1] = 0.0f;
+		matDiffuse[2] = 1.0f;
+		matDiffuse[3] = 1.0f;
+		
 		gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
 		gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
 	}
 	
 	// 昼のマテリアルを有効化
 	public static void enableNoonMaterial(GL10 gl){
-		float[] matAmbient = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-		float[] matDiffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+		for(int i=0; i<4; i++){
+			matAmbient[i] = 1.0f;
+			matDiffuse[i] = 1.0f;
+		}
 
 		gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
 		gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
@@ -115,7 +129,7 @@ public final class RenderUtil {
 		Display display = wm.getDefaultDisplay();
 
 		// sizeに解像度をセット
-		Point size = new Point();
+		if(size == null) size = new Point();
 		display.getSize(size);
 		
 		return size;

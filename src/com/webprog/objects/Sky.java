@@ -13,14 +13,16 @@ import com.bulletphysics.collision.shapes.*;
 import com.bulletphysics.dynamics.*;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.webprog.R;
-import com.webprog.util.RenderUtil;
+import com.webprog.render.World.Grobal;
+import com.webprog.tool.RenderUtil;
 
 public final class Sky {
-	private FloatBuffer mVertexBuffer;
-	private ByteBuffer mIndexBuffer;
+	private FloatBuffer vertexBuffer;
+	private ByteBuffer normalBuffer;
+	private ByteBuffer indexBuffer;
 
-	private int mTexture;
-	private int mVBO;
+	private int texture;
+	private int vbo;
 
 	public Sky(DynamicsWorld world) {
 		createGeometry();
@@ -36,21 +38,30 @@ public final class Sky {
 				1000.f, -1000.f, 50.f, 1.0f, 0.0f,
 				1000.f, 1000.f, 50.f, 1.0f, 1.0f,
 		};
+		
+		byte normals[] = {
+				0, 0, -1,
+				0, 0, -1,
+				0, 0, -1,
+				0, 0, -1,
+		};
 
 		byte indices[] = { 0, 1, 2, 3, };
 
-		mVertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
-		mIndexBuffer = RenderUtil.allocateByteBuffer(indices);
+		vertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
+		normalBuffer = RenderUtil.allocateByteBuffer(normals);
+		indexBuffer = RenderUtil.allocateByteBuffer(indices);
 	}
 
 	private RigidBody createRigidBody() {
-		CollisionShape shape = new StaticPlaneShape(new Vector3f(0.f, 0.f, 1.f), 0);
+		Vector3f planeNormal = Grobal.tmpVec;
+		planeNormal.set(0.f, 0.f, 1.f);
+		
+		CollisionShape shape = new StaticPlaneShape(planeNormal, 0);
 
 		DefaultMotionState motionState = new DefaultMotionState();
 
-		RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, motionState, shape);
-
-		return new RigidBody(rbInfo);
+		return new RigidBody(0, motionState, shape);
 	}
 
 	public void draw(GL10 gl) {
@@ -64,12 +75,13 @@ public final class Sky {
 		gl.glCullFace(GL10.GL_BACK);
 
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
 		GL11 gl11 = (GL11) gl;
 		
-		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, mVBO);
-		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, mVertexBuffer.capacity() * 4, mVertexBuffer, GL11.GL_STATIC_DRAW);
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, vbo);
+		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, vertexBuffer.capacity() * 4, vertexBuffer, GL11.GL_STATIC_DRAW);
 		
 		{
 			gl11.glVertexPointer(3, GL10.GL_FLOAT, 4 * 5, 0);
@@ -79,11 +91,16 @@ public final class Sky {
 		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
 
 		gl.glEnable(GL11.GL_TEXTURE_2D);
-		gl.glBindTexture(GL10.GL_TEXTURE_2D, mTexture);
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, texture);
+		
+		{
+			gl.glNormalPointer(GL10.GL_UNSIGNED_BYTE, 0, normalBuffer);
+		}
 
-		gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
+		gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4, GL10.GL_UNSIGNED_BYTE, indexBuffer);
 
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 		
 		gl.glDisable(GL10.GL_TEXTURE_2D);
@@ -94,8 +111,8 @@ public final class Sky {
 	}
 
 	public void init(GL10 gl, Context context) {
-		mTexture = RenderUtil.loadTex(gl, context, R.drawable.blue_sky);
-		mVBO = RenderUtil.makeFloatVBO((GL11)gl, mVertexBuffer);
+		texture = RenderUtil.loadTex(gl, context, R.drawable.blue_sky);
+		vbo = RenderUtil.makeFloatVBO((GL11)gl, vertexBuffer);
 	}
 
 }
