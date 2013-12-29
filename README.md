@@ -1,17 +1,19 @@
 PhysXワールドサンプル
 ========
 
-<img src="http://web-prog.com/wp-content/uploads/start_ana.png">
+<img src="http://web-prog.com/wp-content/uploads/world_top.png">
 
 <a href="http://web-prog.com/">OpenGL ESからJBulletまで3DAndroid入門@プロバナ</a>で作ったプログラムを置きます。
 
-2013年10月28日にアナログスティックUIを追加し、四方八方の移動が可能になりました。
+2013年12月29日の更新分で全体的に高速になりました。
 
-今回の主な更新点は以下です。
+以下が今回のアップデート内容です。
 
-・空と地面のリアリティを改善
+・ドミノを追加
 
-・諸所のコードを読みやすく
+・サインコサインをキャッシュしたり、Mathクラスを使わない等、所々の工夫
+
+・メニューから行っていたイベントをボタン処理にした
 
 3Dワールド内を自由に歩き回ることができる、FPS風の仕様になっています。
 
@@ -23,7 +25,7 @@ PhysXワールドサンプル
 
 <img src="http://web-prog.com/wp-content/uploads/shoot_ana.png">
     
-    /* 昼夜の切り替え（メニューより選択） */
+    /* 昼夜の切り替え */
     mWorld.darkSwitch();
     
 <img src="http://web-prog.com/wp-content/uploads/dark_analog.png">
