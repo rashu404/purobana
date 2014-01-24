@@ -1,7 +1,7 @@
 PhysXワールドサンプル
 ========
 
-<img src="http://web-prog.com/wp-content/uploads/world_top.png">
+<img src="http://web-prog.com/wp-content/uploads/fieldMap.png">
 
 <a href="http://web-prog.com/">OpenGL ESからJBulletまで3DAndroid入門@プロバナ</a>で作ったプログラムを置きます。
 
