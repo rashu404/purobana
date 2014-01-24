@@ -3,13 +3,19 @@ package com.webprog.tool;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
-import com.bulletphysics.collision.dispatch.*;
-import com.bulletphysics.dynamics.*;
+import com.bulletphysics.collision.dispatch.CollisionConfiguration;
+import com.bulletphysics.collision.dispatch.CollisionDispatcher;
+import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
+import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
+import com.webprog.render.World.Grobal;
 
 public final class PhysicsUtil {
 	private static Vector3f rayFrom, rayForward, hor, vertical, 
 					dHor, dVert, rayToCenter, tmp1, tmp2, rayTo;
+	
+	private static float fov, tanfov, aspect;
 
 	/**
 	 * 初期化したダイナミクスワールドを返す
@@ -24,11 +30,14 @@ public final class PhysicsUtil {
 
 		SequentialImpulseConstraintSolver solver = new SequentialImpulseConstraintSolver();
 
-		DynamicsWorld mDynamicsWorld = new DiscreteDynamicsWorld(dispatcher, broadphase, solver,
+		Vector3f gravity = Grobal.tmpVec;
+		gravity.set(0.0f, 0.0f, -10.0f);
+		
+		DynamicsWorld dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, broadphase, solver,
 				collisionConfiguration);
-		mDynamicsWorld.setGravity(new Vector3f(0.0f, 0.0f, -10.0f));
+		dynamicsWorld.setGravity(gravity);
 
-		return mDynamicsWorld;
+		return dynamicsWorld;
 	}
 	
 	/**
@@ -48,7 +57,7 @@ public final class PhysicsUtil {
 		float bottom = -1f;
 		float nearPlane = 1f;
 		float tanFov = (top - bottom) * 0.5f / nearPlane;
-		float fov = 2f * (float) Math.atan(tanFov);
+		if(fov == 0) fov = 2f * (float) Math.atan(tanFov);
 		
 		if(rayFrom == null){
 			initGetRayTo(eye, look, up);
@@ -70,18 +79,22 @@ public final class PhysicsUtil {
 		vertical.cross(hor, rayForward);
 		vertical.normalize();
 
-		float tanfov = (float) Math.tan(0.5f * fov);
+		if(tanfov == 0) tanfov = (float) Math.tan(0.5f * fov);
 		
 		float aspect = height / width;
 		
 		hor.scale(2f * farPlane * tanfov);
 		vertical.scale(2f * farPlane * tanfov);
 		
-		if (aspect < 1f) {
-			hor.scale(1f / aspect);
-		}
-		else {
-			vertical.scale(aspect);
+		if(PhysicsUtil.aspect != aspect){
+			if (aspect < 1f) {
+				hor.scale(1f / aspect);
+			}
+			else {
+				vertical.scale(aspect);
+			}
+			
+			PhysicsUtil.aspect = aspect;
 		}
 		
 		rayToCenter.add(rayFrom, rayForward);

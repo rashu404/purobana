@@ -20,8 +20,8 @@ public final class RenderUtil {
 	
 	private static Point size;
 	
-	private static float[] matAmbient = new float[4];
-	private static float[] matDiffuse = new float[4];
+	private static final float[] matAmbient = new float[4];
+	private static final float[] matDiffuse = new float[4];
 	
 	private RenderUtil() {
 	}
@@ -40,6 +40,10 @@ public final class RenderUtil {
 		gl.glEnable(GL10.GL_TEXTURE_2D);
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+		
+		gl.glTexEnvf( GL10.GL_TEXTURE_ENV, GL10.GL_TEXTURE_ENV_MODE, GL10.GL_MODULATE );
+		
+		gl.glDisable(GL10.GL_TEXTURE_2D);
 
 		bmp.recycle();
 
@@ -88,9 +92,9 @@ public final class RenderUtil {
 	}
 	
 	public static FloatBuffer allocateFloatBuffer(float floats[]) {
-		ByteBuffer bb = ByteBuffer.allocateDirect(floats.length * SIZEOF_FLOAT);
-		bb.order(ByteOrder.nativeOrder());
-		FloatBuffer buffer = bb.asFloatBuffer();
+		ByteBuffer fb = ByteBuffer.allocateDirect(floats.length * SIZEOF_FLOAT);
+		fb.order(ByteOrder.nativeOrder());
+		FloatBuffer buffer = fb.asFloatBuffer();
 		buffer.put(floats);
 		buffer.position(0);
 
@@ -114,12 +118,76 @@ public final class RenderUtil {
 		return buffer;
 	}
 	
-	// FloatBufferからVBOを作成する
+	// BufferからVBOを作成する
 	public static int makeFloatVBO(GL11 gl11, FloatBuffer fb) {
 		int[] bufferIds = new int[1];
 		gl11.glGenBuffers(1, bufferIds, 0);
 		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, bufferIds[0]);
 		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, fb.capacity() * 4, fb, GL11.GL_STATIC_DRAW);
+		return bufferIds[0];
+	}
+	
+	public static int makeFloatVBO(GL11 gl11, float[] floats) {
+		FloatBuffer fb = allocateFloatBuffer(floats);
+		
+		int[] bufferIds = new int[1];
+		gl11.glGenBuffers(1, bufferIds, 0);
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, bufferIds[0]);
+		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, fb.capacity() * 4, fb, GL11.GL_STATIC_DRAW);
+		
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
+		return bufferIds[0];
+	}
+	
+	public static int makeShortVBO(GL11 gl11, ShortBuffer sb) {
+		int[] bufferIds = new int[1];
+		gl11.glGenBuffers(1, bufferIds, 0);
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, bufferIds[0]);
+		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, sb.capacity() * 2, sb, GL11.GL_STATIC_DRAW);
+		return bufferIds[0];
+	}
+	
+	public static int makeShortVBO(GL11 gl11, short[] shorts){
+		ShortBuffer sb = allocateShortBuffer(shorts);
+		
+		int[] bufferIds = new int[1];
+		gl11.glGenBuffers(1, bufferIds, 0);
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, bufferIds[0]);
+		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, sb.capacity() * 2, sb, GL11.GL_STATIC_DRAW);
+		
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
+		return bufferIds[0];
+	}
+	
+	public static int makeByteVBO(GL11 gl11, ByteBuffer bb) {      
+        int[] bufferIds=new int[1];
+        gl11.glGenBuffers(1,bufferIds,0);
+        gl11.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER,bufferIds[0]);
+        gl11.glBufferData(GL11.GL_ELEMENT_ARRAY_BUFFER,
+            bb.capacity(),bb,GL11.GL_STATIC_DRAW);
+        return bufferIds[0];
+    }
+	
+	public static int makeByteVBO(GL11 gl11, byte[] bytes) {        
+        ByteBuffer bb = allocateByteBuffer(bytes);
+		
+        int[] bufferIds=new int[1];
+        gl11.glGenBuffers(1,bufferIds,0);
+        gl11.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER,bufferIds[0]);
+        gl11.glBufferData(GL11.GL_ELEMENT_ARRAY_BUFFER,
+            bb.capacity(),bb,GL11.GL_STATIC_DRAW);
+        return bufferIds[0];
+    }
+	
+	public static int makeByteIndexVBO(GL11 gl11, byte[] bytes){
+		ByteBuffer bb = allocateByteBuffer(bytes);
+	
+		int[] bufferIds = new int[1];
+		gl11.glGenBuffers(1, bufferIds, 0);
+		gl11.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, bufferIds[0]);
+		gl11.glBufferData(GL11.GL_ELEMENT_ARRAY_BUFFER, bb.capacity(), bb, GL11.GL_STATIC_DRAW);
+		
+		gl11.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, 0);
 		return bufferIds[0];
 	}
 	

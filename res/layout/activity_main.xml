@@ -10,6 +10,18 @@
         android:layout_height="match_parent" />
 
     <LinearLayout
+        android:id="@+id/object_map_layout"
+        android:layout_width="140dip"
+        android:layout_height="140dip"
+        android:layout_gravity="top|left"
+        android:layout_marginBottom="8dip"
+        android:layout_marginLeft="8dip"
+        android:layout_marginRight="8dip"
+        android:layout_marginTop="8dip"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right|bottom"

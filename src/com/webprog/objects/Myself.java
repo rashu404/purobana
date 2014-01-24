@@ -3,14 +3,18 @@ package com.webprog.objects;
 import javax.microedition.khronos.opengles.GL10;
 import javax.vecmath.Vector3f;
 
-import com.bulletphysics.collision.dispatch.*;
-import com.bulletphysics.collision.shapes.*;
-import com.bulletphysics.dynamics.*;
-import com.bulletphysics.linearmath.*;
+import com.bulletphysics.collision.dispatch.CollisionFlags;
+import com.bulletphysics.collision.dispatch.CollisionObject;
+import com.bulletphysics.collision.shapes.CapsuleShapeZ;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.dynamics.DynamicsWorld;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.linearmath.DefaultMotionState;
+import com.bulletphysics.linearmath.Transform;
 import com.webprog.render.World.Grobal;
 
 // カメラ位置（eye）のCollisionShapeを作成・同期するクラス
-public final class Myself{	
+public final class Myself{
 	private RigidBody rigidBody;
 	private Transform transform;
 			
@@ -32,7 +36,7 @@ public final class Myself{
 	// kinematic剛体の作成メソッド
 	private void createKinematicBody(DefaultMotionState motionState) {
 		// CollisionShapeを作成
-		CollisionShape shape = new CapsuleShapeZ(1f, 3f);
+		CollisionShape shape = new CapsuleShapeZ(2f, 3f);
 
 		// 剛体の慣性
 		Vector3f localInertia = Grobal.tmpVec;
@@ -42,14 +46,13 @@ public final class Myself{
 		this.rigidBody = new RigidBody(3f, motionState, shape, localInertia);
 		
 		// kinematic剛体の設定
-		this.rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() 
-				| CollisionFlags.KINEMATIC_OBJECT);
+		this.rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() | CollisionFlags.KINEMATIC_OBJECT);
 		this.rigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
 	}
-
+	
 	// カメラ位置とkinematic剛体の位置を同期
-	public void sync(GL10 gl, Vector3f eye) {
+	public void sync(GL10 gl, Vector3f eye, Vector3f look) {
 		this.transform.origin.set(eye);
-		this.rigidBody.getMotionState().setWorldTransform(transform);
+		this.rigidBody.getMotionState().setWorldTransform(this.transform);
 	}
 }

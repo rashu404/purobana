@@ -1,102 +1,80 @@
 package com.webprog.objects;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;
 import javax.vecmath.Vector3f;
 
 import android.content.Context;
 
+import com.bulletphysics.collision.shapes.BoxShape;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.dynamics.DynamicsWorld;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.linearmath.DefaultMotionState;
 import com.webprog.R;
 import com.webprog.render.World.Grobal;
 import com.webprog.tool.RenderUtil;
-import com.bulletphysics.collision.shapes.*;
-import com.bulletphysics.dynamics.*;
-import com.bulletphysics.linearmath.*;
+import com.webprog.ui.FieldMap;
 
-public final class Cube{	
-	private RigidBody rigidBody;
-	private Transform transform;	
+public final class Cube extends AbstractDynamicObject{
+	private static int textureId;
 	
-	private float[] matrix = new float[16];
+	private static int bufferDataId;
+	private static int indexDataId;
 	
-	private static FloatBuffer vertexBuffer;
-	private static FloatBuffer normalBuffer;
-	private static ByteBuffer indexBuffer;
-
-	private static int texture;
-	private static int vbo;
+	private static CollisionShape boxShape;
 	
-	public Cube(DynamicsWorld world, Vector3f position) {		
-		// 配列をバッファへ格納
-		if( this.isBufferNull() ) createGeometry();
+	public Cube() {		
+		this.fieldMapColor = FieldMap.CUBE_COLOR;
+		this.syncDefMotionState(null);
+	}
+	
+	public Cube(DynamicsWorld world, Vector3f position) {
+		this.fieldMapColor = FieldMap.CUBE_COLOR;
+		this.syncDefMotionState(position);
 		
-		// トランスフォーム（位置と回転）を初期化
-		this.transform = new Transform();
-		this.transform.setIdentity();
-		this.transform.origin.set(position);
-
-		DefaultMotionState motionState = new DefaultMotionState(transform);
-		
-		// 視覚とダイナミクスワールドを同期
-		this.createRigidBody(motionState);
-
 		// ワールドへ剛体を追加
-		world.addRigidBody(rigidBody);
-	}
-	
-	private boolean isBufferNull(){
-		return vertexBuffer == null && normalBuffer == null && indexBuffer == null;
+		synchronized (world) { world.addRigidBody(rigidBody); }
+		this.alreadyAddWorld = true;
 	}
 
-	private void createGeometry() {
+	private static void createGeometry(GL11 gl11) {
 		float vertices[] = {
-			//左から３つが頂点、残り２つがテクスチャ
-			1.f, 1.f, 1.f, 0.0f, 0.0f,
-			-1.f, 1.f, 1.f, 0.0f, 1.0f,
-			-1.f, -1.f, 1.f, 1.0f, 1.0f,
-			1.f, -1.f, 1.f, 1.0f, 0.0f,
+			//左から３、２、３の順で頂点・UV・法線座標
+			1.2f, 1.2f, 1.2f, 0.0f, 0.0f,0.f, 0.f, 1.f,
+			-1.2f, 1.2f, 1.2f, 0.0f, 1.0f,0.f, 0.f, 1.f,
+			-1.2f, -1.2f, 1.2f, 1.0f, 1.0f,0.f, 0.f, 1.f,
+			1.2f, -1.2f, 1.2f, 1.0f, 0.0f,0.f, 0.f, 1.f,
 
-			1.f, 1.f, -1.f, 0.0f, 0.0f,
-			1.f, -1.f, -1.f, 1.0f, 0.0f,
-			-1.f, -1.f, -1.f, 1.0f, 1.f,
-			-1.f, 1.f, -1.f, 0.0f, 1.0f,
+			1.2f, 1.2f, -1.2f, 0.0f, 0.0f, 0.f, 0.f, -1.f,
+			1.2f, -1.2f, -1.2f, 1.0f, 0.0f, 0.f, 0.f, -1.f,
+			-1.2f, -1.2f, -1.2f, 1.0f, 1.0f, 0.f, 0.f, -1.f,
+			-1.2f, 1.2f, -1.2f, 0.0f, 1.0f, 0.f, 0.f, -1.f,
 			
-			1.f, 1.f, 1.f, 0.0f, 0.0f,
-			1.f, -1.f, 1.f, 0.0f, 1.0f,
-			1.f, -1.f, -1.f, 1.0f, 1.0f,
-			1.f, 1.f, -1.f, 1.0f, 0.0f,
+			1.2f, 1.2f, 1.2f, 0.0f, 0.0f, 1.f, 0.f, 0.f,
+			1.2f, -1.2f, 1.2f, 0.0f, 1.0f, 1.f, 0.f, 0.f,
+			1.2f, -1.2f, -1.2f, 1.0f, 1.0f, 1.f, 0.f, 0.f,
+			1.2f, 1.2f, -1.2f, 1.0f, 0.0f, 1.f, 0.f, 0.f,
                 
-			-1.f, -1.f, 1.f, 0.0f, 0.0f,
-			-1.f, -1.f, -1.f, 0.0f, 1.0f,
-			1.f, -1.f, -1.f, 1.0f, 1.0f,
-			1.f, -1.f, 1.f, 1.0f, 0.0f,
+			-1.2f, -1.2f, 1.2f, 0.0f, 0.0f, 0.f, -1.f, 0.f,
+			-1.2f, -1.2f, -1.2f, 0.0f, 1.0f, 0.f, -1.f, 0.f,
+			1.2f, -1.2f, -1.2f, 1.0f, 1.0f, 0.f, -1.f, 0.f,
+			1.2f, -1.2f, 1.2f, 1.0f, 0.0f, 0.f, -1.f, 0.f,
                 
-			-1.f, 1.f, 1.f, 0.0f, 0.0f,
-			1.f, 1.f, 1.f, 0.0f, 1.0f,
-			1.f, 1.f, -1.f, 1.0f, 1.0f,
-			-1.f, 1.f, -1.f, 1.0f, 0.0f,
+			-1.2f, 1.2f, 1.2f, 0.0f, 0.0f, 0.f, 1.f, 0.f,
+			1.2f, 1.2f, 1.2f, 0.0f, 1.0f, 0.f, 1.f, 0.f,
+			1.2f, 1.2f, -1.2f, 1.0f, 1.0f, 0.f, 1.f, 0.f,
+			-1.2f, 1.2f, -1.2f, 1.0f, 0.0f, 0.f, 1.f, 0.f,
                 
-			-1.f, 1.f, -1.f, 0.0f, 0.0f,
-			-1.f, -1.f, -1.f, 0.0f, 1.0f,
-			-1.f, -1.f, 1.f, 1.0f, 1.0f,
-			-1.f, 1.f, 1.f, 1.0f, 0.0f,
+			-1.2f, 1.2f, -1.2f, 0.0f, 0.0f, -1.f, 0.f, 0.f,
+			-1.2f, -1.2f, -1.2f, 0.0f, 1.0f, -1.f, 0.f, 0.f,
+			-1.2f, -1.2f, 1.2f, 1.0f, 1.0f, -1.f, 0.f, 0.f,
+			-1.2f, 1.2f, 1.2f, 1.0f, 0.0f, -1.f, 0.f, 0.f,
 		};
 
-		float normals[] = {
-				0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f,
-                0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f,
-                1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f,
-                0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f,
-                0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f,
-                -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f
-		};
+		byte indices[] = new byte[6 * 2 * 3];
 
-		byte indices[] = new byte[6 * 2 * 3]; // 6 faces, 2 triangles per face, 3 indices per triangle
-
-		for(byte i = 0; i < 6; i++) {
+		for(int i = 0; i < 6; i++) {
 			indices[i * 6 + 0] = (byte) (i * 4 + 0);
 			indices[i * 6 + 1] = (byte) (i * 4 + 1);
 			indices[i * 6 + 2] = (byte) (i * 4 + 2);
@@ -106,46 +84,44 @@ public final class Cube{
 			indices[i * 6 + 3 + 2] = (byte) (i * 4 + 3);
 		}
 
-		// それぞれのバッファを作成
-		vertexBuffer = RenderUtil.allocateFloatBuffer(vertices);
-		normalBuffer = RenderUtil.allocateFloatBuffer(normals);
-		indexBuffer = RenderUtil.allocateByteBuffer(indices);
-
+		bufferDataId = RenderUtil.makeFloatVBO(gl11, vertices);
+		indexDataId = RenderUtil.makeByteIndexVBO(gl11, indices);
 	}
-	private void createRigidBody(DefaultMotionState motionState) {
+	
+	@Override
+	protected void createRigidBody(DefaultMotionState motionState) {
 		// 初期化用に使いまわすVector3fインスタンス
 		Vector3f initVec = Grobal.tmpVec;
-		initVec.set(1f, 1f, 1f);
 		
-		// CollisionShapeを作成
-		CollisionShape shape = new BoxShape(initVec);
-
-		// 剛体の慣性をセット
+		if(boxShape == null){
+			initVec.set(1.2f, 1.2f, 1.2f);
+			boxShape = new BoxShape(initVec);
+		}
+		
+		// 剛体の慣性
 		initVec.set(10f, 10f, 10f);
 
-		// rbInfoを基に剛体を作成
-		rigidBody = new RigidBody(10.f, motionState, shape, initVec);
-
-		// 反発係数を加える
-		//mRigidBody.setRestitution(1.75f);
+		this.rigidBody = new RigidBody(10.f, motionState, boxShape, initVec);
 	}
 
+	@Override
 	public void draw(GL10 gl) {
-		this.rigidBody.getMotionState().getWorldTransform(this.transform);
-
-		this.transform.getOpenGLMatrix(matrix);
-
+		super.draw(gl);
+		
 		gl.glPushMatrix();
 		gl.glMultMatrixf(this.matrix, 0);
+				
+		((GL11)gl).glDrawElements(GL10.GL_TRIANGLES, 6 * 2 * 3, GL10.GL_UNSIGNED_BYTE, 0);
 		
-		// カリングの有効化
+		gl.glPopMatrix();
+	}
+	
+	public static void bind(GL10 gl){
+		// カリングを有効化し、裏面を描画しない
 		gl.glEnable(GL10.GL_CULL_FACE);
-		
-		// 裏面を描画しない
 		gl.glFrontFace(GL10.GL_CCW);
 		gl.glCullFace(GL10.GL_BACK);
-	
-		// 各配列を有効化
+			
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
@@ -153,87 +129,44 @@ public final class Cube{
 		GL11 gl11 = (GL11) gl;		
 
 		// VBOの関連付け
-		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, vbo);
-		gl11.glBufferData(GL11.GL_ARRAY_BUFFER, vertexBuffer.capacity() * 4, vertexBuffer, GL11.GL_STATIC_DRAW);
-		
-		{
-			// 頂点配列・テクスチャ配列をOpenGL ES上で定義
-            gl11.glVertexPointer(3, GL10.GL_FLOAT, 4 * 5, 0);
-            gl11.glTexCoordPointer(2, GL10.GL_FLOAT, 4 * 5, 4 * 3);
-        }
+		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, bufferDataId);
+				
+		gl11.glVertexPointer(3, GL10.GL_FLOAT, 4 * 8, 0);
+		gl11.glTexCoordPointer(2, GL10.GL_FLOAT, 4 * 8, 4 * 3);
+		gl11.glNormalPointer(GL10.GL_FLOAT, 4 * 8, 4 * 5);
 
-		gl11.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
-
-		// テクスチャを有効化
+		gl11.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, indexDataId);
+				
 		gl.glEnable(GL10.GL_TEXTURE_2D);
-		gl.glBindTexture(GL10.GL_TEXTURE_2D, texture);
-
-		{
-			// 法線配列をOpenGL ES上で定義
-			gl.glNormalPointer(GL10.GL_FLOAT, 0, normalBuffer);
-		}
-
-		// インデックスバッファを元に描画
-		gl.glDrawElements(GL10.GL_TRIANGLES, 6 * 2 * 3, GL10.GL_UNSIGNED_BYTE, indexBuffer);
-
-		// 各配列を無効化
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, textureId);
+	}
+	
+	public static void unBind(GL10 gl){
+		gl.glDisable(GL10.GL_TEXTURE_2D);
+		
+		GL11 gl11 = (GL11) gl;
+		
+		gl11.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, 0);
+		gl11.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, 0);
+				
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
-		
-		// テクスチャを無効化
-		gl.glDisable(GL10.GL_TEXTURE_2D);
-		
-		// カリングを無効化
+				
 		gl.glDisable(GL10.GL_CULL_FACE);
-		
-		gl.glPopMatrix();
 	}
 
 	public void shootCube(Vector3f linVel){
 		RigidBody rb = rigidBody;
 		rb.activate(true);
 		rb.setLinearVelocity(linVel);
-	}
-
-	public void setPosition(float x, float y, float z){
-		Transform tf = transform;
-		tf.setIdentity();
-		tf.origin.set(x, y, z);
-		
-		RigidBody rb = rigidBody;
-		rb.activate(true);
-		rb.setWorldTransform(transform);
-	}
-	
-	public void setPosition(Vector3f pos){
-		Transform tf = transform;
-		tf.setIdentity();
-		tf.origin.set(pos);
-		
-		RigidBody rb = rigidBody;
-		rb.activate(true);
-		rb.setWorldTransform(transform);
-	}
-	
-	public void initPosition(Vector3f defLinVel, Vector3f defRotate, float x, float y, float z){
-		Transform tf = transform;
-		tf.setIdentity();
-		tf.origin.set(x, y, z);
-		
-		RigidBody rb = rigidBody;
-		rb.setLinearVelocity(defLinVel);
-		rb.setAngularVelocity(defRotate);
-		rb.activate(true);
-		rb.setWorldTransform(transform);
-	}
-	
-	public RigidBody getRigidBody(){
-		return rigidBody;
+		Vector3f angVel = Grobal.tmpVec;
+		angVel.set(0, 0, 0);
+		rb.setAngularVelocity(angVel);
 	}
 	
 	public static void init(GL10 gl, Context context){
-		texture = RenderUtil.loadTex(gl, context, R.drawable.mokume2);
-		vbo = RenderUtil.makeFloatVBO((GL11)gl, vertexBuffer);
+		createGeometry((GL11) gl);
+		textureId = RenderUtil.loadTex(gl, context, R.drawable.wood_box);
 	}
 }

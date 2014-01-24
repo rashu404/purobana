@@ -13,20 +13,29 @@ import android.widget.LinearLayout;
 
 import com.webprog.render.MyRenderer;
 import com.webprog.ui.AnalogStick;
+import com.webprog.ui.FieldMap;
 
 public final class PhysxWorldActivity extends Activity implements OnClickListener{
 	private static MyRenderer myRenderer;
-	private static AnalogStick analogStick;
+	private static FieldMap fieldMap;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		
 		setContent();
 		setAnalogStick();
+		setObjectMap();
 		setButton();
 		
 		myRenderer = (MyRenderer) findViewById(R.id.renderer);
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		
+		myRenderer.setFieldMap(fieldMap);
 	}
 	
 	private void setContent(){
@@ -37,10 +46,17 @@ public final class PhysxWorldActivity extends Activity implements OnClickListene
 	}
 	
 	private void setAnalogStick(){
-		analogStick = new AnalogStick(this);
+		AnalogStick analogStick = new AnalogStick(this);
 		
 		LinearLayout analogLayout = (LinearLayout)findViewById(R.id.analog_stick_layout);
 		analogLayout.addView(analogStick);
+	}
+	
+	private void setObjectMap(){
+		fieldMap = new FieldMap(this);
+		
+		LinearLayout mapLayout = (LinearLayout)findViewById(R.id.object_map_layout);
+		mapLayout.addView(fieldMap);	
 	}
 	
 	private void setButton(){
@@ -50,10 +66,8 @@ public final class PhysxWorldActivity extends Activity implements OnClickListene
 	}
 	
 	public boolean onCreateOptionsMenu(Menu menu) {
-
 		menu.add(Menu.NONE, 0, 0, "Switch Dark or Noon");
-		menu.add(Menu.NONE, 1, 1, "Falling Cubes");
-		menu.add(Menu.NONE, 2, 2, "Init Cubes Postion");
+		menu.add(Menu.NONE, 1, 1, "Init Object Postion");
 
 		return super.onCreateOptionsMenu(menu);
 	};
@@ -62,7 +76,7 @@ public final class PhysxWorldActivity extends Activity implements OnClickListene
 	public boolean onOptionsItemSelected(MenuItem item) {
 		MyEvent mte = MyEvent.getInstance();
 		mte.onSelectedMenuItem(item, myRenderer.getWorld());
-
+		
 		return true;
 	}
 
@@ -70,13 +84,13 @@ public final class PhysxWorldActivity extends Activity implements OnClickListene
 		return myRenderer;
 	}
 	
-	public static AnalogStick getAnalogStick(){
-		return analogStick;
+	public static FieldMap getFieldMap(){
+		return fieldMap;
 	}
 
 	@Override
 	public void onClick(View v) {
-		MyEvent.getInstance().onClickButton(v, myRenderer.getWorld());
+		MyEvent.getInstance().onClickButton(v, myRenderer);
 	}
 
 }

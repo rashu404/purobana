@@ -25,7 +25,7 @@ public class ObjLoader{
 		try {
 			loadObj(context.getAssets(), fileName);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException(fileName+" not found.");
 		}
 	}
 	

@@ -17,6 +17,7 @@ public class AnalogStick extends View implements OnTouchListener{
 	public AnalogStick(Context context) {
 		super(context);
 		
+		this.paint = new Paint();
 		setOnTouchListener(this);
 	}
 	
@@ -24,7 +25,6 @@ public class AnalogStick extends View implements OnTouchListener{
 	@Override
 	protected void onDraw(Canvas canvas) {
 		if(this.canvas == null) this.canvas = canvas;
-		if(paint == null) paint = new Paint();
 		
 		paint.setColor(Color.rgb(100, 100, 100));
 		paint.setAlpha(150);
@@ -49,14 +49,14 @@ public class AnalogStick extends View implements OnTouchListener{
 	@Override
 	public boolean onTouch(View v, MotionEvent e) {
 		MyEvent myEvent = MyEvent.getInstance();
-		myEvent.onAnalogStick(canvas, e);
+		myEvent.onAnalogStick(canvas, e, this);
 		
 		invalidate();
 		
 		return true;
 	}
 	
-	public void setAnalogStickPos(float analogStickX, float analogStickY){
+	public void setPosition(float analogStickX, float analogStickY){
 		this.analogStickX = analogStickX;
 		this.analogStickY = analogStickY;
 	}
