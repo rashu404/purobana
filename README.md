@@ -5,15 +5,15 @@ PhysXワールドサンプル
 
 <a href="http://web-prog.com/">OpenGL ESからJBulletまで3DAndroid入門@プロバナ</a>で作ったプログラムを置きます。
 
-2013年12月29日の更新分で全体的に高速になりました。
+2014年01月24日に3D空間にあるカメラ位置付近のオブジェクトをマップにしました。
 
 以下が今回のアップデート内容です。
 
-・ドミノを追加
+・マップの追加
 
-・サインコサインをキャッシュしたり、Mathクラスを使わない等、所々の工夫
+・OpenGL ESの不要なメソッドを削除
 
-・メニューから行っていたイベントをボタン処理にした
+・ソースコードの整理
 
 3Dワールド内を自由に歩き回ることができる、FPS風の仕様になっています。
 
@@ -30,7 +30,7 @@ PhysXワールドサンプル
     
 <img src="http://web-prog.com/wp-content/uploads/dark_analog.png">
     
-    /* キューブ雨を降らせる（メニューより選択） */
+    /* キューブ雨を降らせる（現在は削除） */
     mWorld.rainSwitch();
     
 <img src="http://web-prog.com/wp-content/uploads/falling_ana.png">
